@@ -1,6 +1,7 @@
 package com.tung.bcbe.model;
 
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -25,6 +26,11 @@ public abstract class ID implements Serializable {
     @GeneratedValue
     @Column(name = "id")
     private UUID id;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    @CreatedDate
+    private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)

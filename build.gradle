@@ -32,15 +32,18 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-jersey'
 //	implementation 'org.springframework.cloud:spring-cloud-starter-aws'
-//	implementation 'org.springframework.cloud:spring-cloud-starter-aws-jdbc'
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
+	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	implementation 'com.h2database:h2'
+	testImplementation 'com.h2database:h2'
 }
+
+
 
 dependencyManagement {
 	imports {
