@@ -32,12 +32,13 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-jersey'
 //	implementation 'org.springframework.cloud:spring-cloud-starter-aws'
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws-jdbc'
+//	implementation 'org.springframework.cloud:spring-cloud-starter-aws-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'com.h2database:h2'
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'com.h2database:h2'
@@ -56,3 +57,5 @@ docker {
 	name 'tungpham/bcbe:1.0'
 	files bootJar.archiveFile, processResources
 }
+
+//run dockerPush task to push this to docker
