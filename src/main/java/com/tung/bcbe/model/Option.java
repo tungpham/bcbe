@@ -11,24 +11,27 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
 @Builder
 @Data
-@Entity
-public class TemCat extends ID {
+@Entity(name = "option")
+@Table(name = "option")
+public class Option extends ID {
 
-    @ManyToOne
-    @JoinColumn(name = "tem_id")
-    @JsonIgnore
-    private Template template;
+    @Column
+    private String name;
+
+    @Column
+    private String description;
+
+    @Column
+    private String value;
 
     @ManyToOne
     @JoinColumn(name = "cat_id")
     @JsonIgnore
     private Category category;
-
-    @Column
-    private String note;
 }

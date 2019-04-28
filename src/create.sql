@@ -3,9 +3,9 @@ DROP TABLE IF EXISTS project;
 DROP TABLE IF EXISTS subcontractor;
 DROP TABLE IF EXISTS gencontractor;
 DROP TABLE IF EXISTS address;
-DROP TABLE IF EXISTS tem_cat;
-DROP TABLE IF EXISTS template;
+DROP TABLE IF EXISTS option;
 DROP TABLE IF EXISTS category;
+DROP TABLE IF EXISTS template;
 
 CREATE TABLE address (
     id uuid primary key,
@@ -58,17 +58,6 @@ CREATE TABLE proposal (
     updated_by varchar(50)
 );
 
-CREATE TABLE category (
-    id uuid primary key ,
-    description varchar(200),
-    name varchar(100),
-    type varchar(100),
-    value varchar(100),
-    created_at timestamp not null,
-    updated_at timestamp not null,
-    updated_by varchar(50)
-);
-
 CREATE TABLE template (
     id uuid primary key ,
     description varchar(100),
@@ -78,11 +67,24 @@ CREATE TABLE template (
     updated_by varchar(50)
 );
 
-CREATE TABLE tem_cat (
+CREATE TABLE category (
+    id uuid primary key ,
+    description varchar(200),
+    name varchar(100),
+    type varchar(100),
+    value varchar(100),
+    tem_id uuid references template not null,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE option (
     id uuid primary key,
-    tem_id uuid references template,
-    cat_id uuid references category,
-    note varchar(200),
+    name varchar(100),
+    description varchar(200),
+    value varchar(1000),
+    cat_id uuid references category not null,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

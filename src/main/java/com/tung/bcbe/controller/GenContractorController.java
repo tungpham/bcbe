@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
+//@RequestMapping("/gencontractors")
 public class GenContractorController {
 
     @Autowired

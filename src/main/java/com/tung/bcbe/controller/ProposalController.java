@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,11 +42,11 @@ public class ProposalController {
 
         CompletableFuture<SubContractor> subContractor = CompletableFuture.supplyAsync(() ->
                 subContractorRepository.findById(subId))
-                .thenApply(x -> x.orElseThrow(() -> new ResourceNotFoundException("subcontractor not found " + subId)));
+                .thenApply(x -> x.orElseThrow(Util.notFound(subId)));
 
         CompletableFuture<Project> project = CompletableFuture.supplyAsync(() ->
                 projectRepository.findById(projectId))
-                .thenApply(x -> x.orElseThrow(() -> new ResourceNotFoundException("project not found " + projectId)));
+                .thenApply(x -> x.orElseThrow(Util.notFound(projectId)));
 
         return subContractor.thenCombine(project, (sub, proj) -> {
             proposal.setSubContractor(sub);
