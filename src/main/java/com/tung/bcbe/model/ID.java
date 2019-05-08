@@ -38,12 +38,12 @@ public abstract class ID implements Serializable {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false)
+    @Column
     @CreatedDate
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false)
+    @Column
     @LastModifiedDate
     private Date updatedAt;
 
