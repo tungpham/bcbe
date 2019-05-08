@@ -20,10 +20,10 @@ import javax.persistence.Table;
 @Entity(name = "gencontractor")
 @Table(name = "gencontractor")
 public class GenContractor extends ID {
-
+    
     @Column
     private String email;
-
+    
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
