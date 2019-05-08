@@ -4,6 +4,7 @@ import com.tung.bcbe.model.SubContractor;
 import com.tung.bcbe.repository.SubContractorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -37,5 +38,10 @@ public class SubContractorController {
         subContractor.setCreatedAt(current.getCreatedAt());
         subContractor.setUpdatedAt(new Date());
         return subContractorRepository.save(subContractor);
+    }
+    
+    @GetMapping("/{sub_id}")
+    public SubContractor get(@PathVariable(value = "sub_id") UUID subId) {
+        return subContractorRepository.findById(subId).orElseThrow(Util.notFound(subId));
     }
 }
