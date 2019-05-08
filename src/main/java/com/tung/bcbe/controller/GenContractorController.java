@@ -4,6 +4,7 @@ import com.tung.bcbe.model.GenContractor;
 import com.tung.bcbe.repository.GenContractorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -37,4 +38,10 @@ public class GenContractorController {
         genContractor.setCreatedAt(current.getCreatedAt());
         genContractor.setUpdatedAt(new Date());
         return genContractorRepository.save(genContractor);
-    }}
+    }
+    
+    @GetMapping("/{gen_id}")
+    public GenContractor getGenContractor(@PathVariable(value = "gen_id") UUID genId) {
+        return genContractorRepository.findById(genId).orElseThrow(Util.notFound(genId));    
+    }
+}
