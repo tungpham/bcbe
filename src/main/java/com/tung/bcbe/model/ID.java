@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Data 
 public abstract class ID implements Serializable {
 
     @Id
@@ -38,12 +38,12 @@ public abstract class ID implements Serializable {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column
+    @Column(nullable = false, updatable = false)
     @CreatedDate
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column
+    @Column(nullable = false)
     @LastModifiedDate
     private Date updatedAt;
 
