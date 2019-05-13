@@ -14,8 +14,8 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder
 @Data
-@Entity(name = "proposal")
-@Table(name = "proposal")
+@Entity(name = "qualification")
+@Table(name = "qualification")
 public class Qualification extends ID {
     
     @Column

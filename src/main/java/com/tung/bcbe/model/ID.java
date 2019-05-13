@@ -1,7 +1,7 @@
 package com.tung.bcbe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -20,12 +20,13 @@ import java.util.UUID;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt"})
 @Data 
 public abstract class ID implements Serializable {
 
     @Id
     @GeneratedValue(generator = "useIdOrGenerate")
-    @GenericGenerator(name = "useIdOrGenerate", strategy = "com.tung.bcbe.model.IdGenerator")
+//    @GenericGenerator(name = "useIdOrGenerate", strategy = "com.tung.bcbe.model.IdGenerator")
     @Column(name = "id")
     private UUID id;
     

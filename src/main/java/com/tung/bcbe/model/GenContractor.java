@@ -9,7 +9,6 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -22,10 +21,10 @@ import javax.persistence.Table;
 @Table(name = "gencontractor")
 public class GenContractor extends ID {
     
-    @Column
+    @Column(updatable = false)
     private String email;
     
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 }

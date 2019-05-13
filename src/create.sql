@@ -21,7 +21,7 @@ CREATE TABLE address (
 CREATE TABLE gencontractor
 (
     id    uuid primary key,
-    email varchar(50),
+    email varchar(50) not null ,
     address_id uuid references address,
     created_at timestamp not null,
     updated_at timestamp not null,
