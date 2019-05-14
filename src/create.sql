@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
+DROP TABLE IF EXISTS contractor;
 DROP TABLE IF EXISTS subcontractor;
 DROP TABLE IF EXISTS gencontractor;
 DROP TABLE IF EXISTS address;
@@ -18,9 +19,20 @@ CREATE TABLE address (
     updated_by varchar(50)
 );
 
+CREATE TABLE contractor
+(
+    id uuid primary key,
+    email varchar(50) not null ,
+    address_id uuid references address,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+
 CREATE TABLE gencontractor
 (
-    id    uuid primary key,
+    id uuid primary key,
     email varchar(50) not null ,
     address_id uuid references address,
     created_at timestamp not null,
@@ -42,7 +54,7 @@ CREATE TABLE project (
     title varchar(100),
     description varchar(200),
     budget numeric(10,2),
-    gen_id uuid references gencontractor,
+    gen_id uuid references contractor,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -52,7 +64,7 @@ CREATE TABLE proposal (
     id uuid primary key,
     description varchar(100),
     project_id uuid references project,
-    sub_id uuid references subcontractor,
+    sub_id uuid references contractor,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

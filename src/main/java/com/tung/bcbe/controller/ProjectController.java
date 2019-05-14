@@ -1,7 +1,7 @@
 package com.tung.bcbe.controller;
 
 import com.tung.bcbe.model.Project;
-import com.tung.bcbe.repository.GenContractorRepository;
+import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,26 +19,31 @@ import java.util.UUID;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/gencontractors")
+@RequestMapping("/contractors")
 public class ProjectController {
 
     @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
-    private GenContractorRepository genContractorRepository;
+    private ContractorRepository contractorRepository;
 
     @PostMapping("/{gen_id}/projects")
     public Project createProject(@PathVariable(value = "gen_id") UUID genId,
                                  @Valid @RequestBody Project project) {
-        return genContractorRepository.findById(genId).map(genContractor -> {
-            project.setGenContractor(genContractor);
+        return contractorRepository.findById(genId).map(genContractor -> {
+            project.setContractor(genContractor);
             return projectRepository.save(project);
         }).orElseThrow(Util.notFound(genId));
     }
 
     @GetMapping("/{gen_id}/projects")
     public Page<Project> getProjectsByGenContractor(@PathVariable(value = "gen_id") UUID genId, Pageable pageable) {
-        return projectRepository.findByGenContractorId(genId, pageable);
+        return projectRepository.findByContractorId(genId, pageable);
+    }
+    
+    @GetMapping("/projects/{project_id}")
+    public Project getProjectById(@PathVariable(value = "project_id") UUID projectId) {
+        return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId));
     }
 }

@@ -13,5 +13,5 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 
     Page<Proposal> findByProjectId(UUID projectId, Pageable pageable);
 
-    Page<Proposal> findBySubContractorId(UUID subContractorId, Pageable pageable);
+    Page<Proposal> findByContractorId(UUID contractorId, Pageable pageable);
 }

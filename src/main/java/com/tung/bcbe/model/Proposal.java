@@ -33,5 +33,5 @@ public class Proposal extends ID {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_id", nullable = false, referencedColumnName = "id")
     @JsonIgnore
-    private SubContractor subContractor;
+    private Contractor contractor;
 }

@@ -5,11 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.UUID;
 
+@CrossOrigin(origins = "*")
 @Repository
 public interface ProjectRepository extends PagingAndSortingRepository<Project, UUID> {
-
-    Page<Project> findByGenContractorId(UUID genId, Pageable pageable);
+    Page<Project> findByContractorId(UUID genId, Pageable pageable);
 }

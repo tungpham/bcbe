@@ -39,5 +39,5 @@ public class Project extends ID {
     @JoinColumn(name = "gen_id", nullable = false, referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
-    private GenContractor genContractor;
+    private Contractor contractor;
 }

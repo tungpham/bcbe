@@ -1,11 +1,11 @@
 package com.tung.bcbe.controller;
 
+import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.Proposal;
-import com.tung.bcbe.model.SubContractor;
+import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProposalRepository;
-import com.tung.bcbe.repository.SubContractorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
 public class ProposalController {
 
     @Autowired
-    private SubContractorRepository subContractorRepository;
+    private ContractorRepository contractorRepository;
 
     @Autowired
     private ProjectRepository projectRepository;
@@ -36,14 +36,14 @@ public class ProposalController {
     @Autowired
     private ProposalRepository proposalRepository;
 
-    @PostMapping("/subcontractors/{sub_id}/projects/{project_id}/proposals")
+    @PostMapping("/contractors/{sub_id}/projects/{project_id}/proposals")
     public Proposal createProposal(@PathVariable(value = "sub_id") UUID subId,
                                    @PathVariable(value = "project_id") UUID projectId,
                                    @Valid @RequestBody Proposal proposal)
             throws ExecutionException, InterruptedException {
 
-        CompletableFuture<SubContractor> subContractor = CompletableFuture.supplyAsync(() ->
-                subContractorRepository.findById(subId))
+        CompletableFuture<Contractor> subContractor = CompletableFuture.supplyAsync(() ->
+                contractorRepository.findById(subId))
                 .thenApply(x -> x.orElseThrow(Util.notFound(subId)));
 
         CompletableFuture<Project> project = CompletableFuture.supplyAsync(() ->
@@ -51,7 +51,7 @@ public class ProposalController {
                 .thenApply(x -> x.orElseThrow(Util.notFound(projectId)));
 
         return subContractor.thenCombine(project, (sub, proj) -> {
-            proposal.setSubContractor(sub);
+            proposal.setContractor(sub);
             proposal.setProject(proj);
             return proposalRepository.save(proposal);
         }).get();
@@ -62,8 +62,8 @@ public class ProposalController {
         return proposalRepository.findByProjectId(projectId, pageable);
     }
 
-    @GetMapping("/subcontractors/{sub_id}/proposals")
+    @GetMapping("/contractors/{sub_id}/proposals")
     public Page<Proposal> getProposalsBySubContractorId(@PathVariable(value = "sub_id") UUID subId, Pageable pageable) {
-        return proposalRepository.findBySubContractorId(subId, pageable);
+        return proposalRepository.findByContractorId(subId, pageable);
     }
 }
