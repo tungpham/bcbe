@@ -21,7 +21,7 @@ import javax.persistence.Table;
 @Table(name = "subcontractor")
 public class SubContractor extends ID {
 
-    @Column
+    @Column(updatable = false)
     private String email;
 
     @OneToOne(cascade = CascadeType.ALL)

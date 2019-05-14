@@ -25,18 +25,11 @@ import java.util.UUID;
 public abstract class ID implements Serializable {
 
     @Id
-    @GeneratedValue(generator = "useIdOrGenerate")
+    @GeneratedValue
+//    @GeneratedValue(generator = "useIdOrGenerate")
 //    @GenericGenerator(name = "useIdOrGenerate", strategy = "com.tung.bcbe.model.IdGenerator")
     @Column(name = "id")
     private UUID id;
-    
-    public UUID getId() {
-        return id;
-    }
-    
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)

@@ -25,6 +25,6 @@ public class GenContractor extends ID {
     private String email;
     
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id", nullable = false)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
 }
