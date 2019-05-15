@@ -31,7 +31,7 @@ public class Option extends ID {
     private String value;
 
     @ManyToOne
-    @JoinColumn(name = "cat_id")
+    @JoinColumn(name = "cat_id", referencedColumnName = "id")
     @JsonIgnore
     private Category category;
 }

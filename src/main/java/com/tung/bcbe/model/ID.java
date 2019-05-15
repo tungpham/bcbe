@@ -26,8 +26,6 @@ public abstract class ID implements Serializable {
 
     @Id
     @GeneratedValue
-//    @GeneratedValue(generator = "useIdOrGenerate")
-//    @GenericGenerator(name = "useIdOrGenerate", strategy = "com.tung.bcbe.model.IdGenerator")
     @Column(name = "id")
     private UUID id;
 

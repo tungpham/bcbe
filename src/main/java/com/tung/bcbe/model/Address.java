@@ -9,7 +9,6 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
@@ -18,10 +17,6 @@ import java.util.UUID;
 @Entity(name = "address")
 @Table(name = "address")
 public class Address extends ID {
-    
-    public Address(String id) {
-        setId(UUID.fromString(id));
-    }
     
     @Column(nullable = false)
     private String name;

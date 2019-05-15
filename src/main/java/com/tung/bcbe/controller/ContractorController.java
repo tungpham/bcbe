@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
@@ -37,8 +38,8 @@ public class ContractorController {
     }
     
     @GetMapping("/{con_id}")
-    public Contractor get(@PathVariable(name = "con_id") UUID genId) {
-        return contractorRepository.findById(genId).orElseThrow(Util.notFound(genId));
+    public Optional<Contractor> get(@PathVariable(name = "con_id") UUID genId) {
+        return contractorRepository.findById(genId);
     }
     
     @GetMapping

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.PersistenceConstructor;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -37,10 +36,10 @@ public class Category extends ID {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "tem_id")
+    @JoinColumn(name = "tem_id", referencedColumnName = "id")
     @JsonIgnore
     private Template template;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category")
     private List<Option> optionList;
 }

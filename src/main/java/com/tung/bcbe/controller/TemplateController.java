@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -35,14 +36,15 @@ public class TemplateController {
 
     @PostMapping("/{tem_id}/categories")
     public Category addCriteriaToTemplate(@PathVariable(name = "tem_id") UUID temId, @RequestBody @Valid Category category) {
-        return templateRepository.findById(temId).map(template -> {
+        templateRepository.findById(temId).ifPresent(template -> {
             category.setTemplate(template);
-            return categoryRepository.save(category);
-        }).orElseThrow(Util.notFound(temId));
+            categoryRepository.save(category);
+        });
+        return category;
     }
 
     @GetMapping("/{tem_id}")
-    public Template getTemplate(@PathVariable(name = "tem_id") UUID temId) {
-        return templateRepository.findById(temId).orElseThrow(Util.notFound(temId));
+    public Optional<Template> getTemplate(@PathVariable(name = "tem_id") UUID temId) {
+        return templateRepository.findById(temId);
     }
 }
