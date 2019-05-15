@@ -1,6 +1,7 @@
 package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
 import com.tung.bcbe.repository.ContractorRepository;
@@ -24,8 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,20 +75,16 @@ public class ProjectController {
                                       RedirectAttributes redirectAttributes) {
         projectRepository.findById(projectId).ifPresent(project -> {
             try {
-                File f = new File(file.getOriginalFilename());
-                f.createNewFile();
-                FileOutputStream fos = new FileOutputStream(f);
-                fos.write(file.getBytes());
-                fos.close();
-
                 ProjectFile projectFile = new ProjectFile();
                 projectFile.setName(file.getOriginalFilename());
                 projectFile.setProject(project);
                 
                 String key = project.getId() + "/" + file.getOriginalFilename();
                 
-                s3.putObject(bucket, key, f);
-
+                ObjectMetadata objectMetadata = new ObjectMetadata();
+                objectMetadata.setContentLength(file.getSize());
+                s3.putObject(bucket, key, file.getInputStream(), objectMetadata);
+                
                 projectFileRepository.save(projectFile);
                 
             } catch (IOException e) {
