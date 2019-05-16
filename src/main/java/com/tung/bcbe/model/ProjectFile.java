@@ -1,5 +1,6 @@
 package com.tung.bcbe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,5 +28,6 @@ public class ProjectFile extends ID {
     
     @ManyToOne
     @JoinColumn(name = "proj_id", referencedColumnName = "id")
+    @JsonIgnore
     private Project project;
 }

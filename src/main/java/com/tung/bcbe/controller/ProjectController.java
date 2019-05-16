@@ -76,7 +76,7 @@ public class ProjectController {
     }
 
     @PutMapping("/projects/{project_id}")
-    public Project getProjectById(@PathVariable(value = "project_id") UUID projectId, 
+    public Project editProject(@PathVariable(value = "project_id") UUID projectId, 
                                             @RequestBody @Valid Project project) {
         return projectRepository.findById(projectId).map(prj -> {
             if (project.getTitle() != null) {
