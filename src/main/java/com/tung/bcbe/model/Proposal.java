@@ -24,6 +24,9 @@ public class Proposal extends ID {
 
     @Column
     private String description;
+    
+    @Column
+    private Double budget;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false, referencedColumnName = "id")

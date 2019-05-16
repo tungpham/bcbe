@@ -51,6 +51,7 @@ CREATE TABLE projectfile (
 CREATE TABLE proposal (
     id uuid primary key,
     description varchar(100),
+    budget numeric(10,2),
     project_id uuid references project,
     sub_id uuid references contractor,
     created_at timestamp not null,
