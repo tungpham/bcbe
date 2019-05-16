@@ -41,12 +41,11 @@ dependencies {
 	implementation 'com.h2database:h2'
 
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.11.551'
+	implementation 'com.google.guava:guava:27.1-jre'
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'com.h2database:h2'
 }
-
-
 
 dependencyManagement {
 	imports {
