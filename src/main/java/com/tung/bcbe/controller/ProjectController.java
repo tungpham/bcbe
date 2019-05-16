@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +34,6 @@ import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
@@ -71,8 +71,25 @@ public class ProjectController {
     }
     
     @GetMapping("/projects/{project_id}")
-    public Optional<Project> getProjectById(@PathVariable(value = "project_id") UUID projectId) {
-        return projectRepository.findById(projectId);
+    public Project getProjectById(@PathVariable(value = "project_id") UUID projectId) {
+        return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId));
+    }
+
+    @PutMapping("/projects/{project_id}")
+    public Project getProjectById(@PathVariable(value = "project_id") UUID projectId, 
+                                            @RequestBody @Valid Project project) {
+        return projectRepository.findById(projectId).map(prj -> {
+            if (project.getTitle() != null) {
+                prj.setTitle(project.getTitle());
+            }
+            if (project.getDescription() != null) {
+                prj.setDescription(project.getDescription());
+            }
+            if (project.getBudget() != null) {
+                prj.setBudget(project.getBudget());
+            }
+            return projectRepository.save(prj);
+        }).orElseThrow(Util.notFound(projectId));
     }
     
     @PostMapping("/projects/{project_id}/files/upload")
