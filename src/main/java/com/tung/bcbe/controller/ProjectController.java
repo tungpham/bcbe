@@ -34,6 +34,7 @@ import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
@@ -76,7 +77,7 @@ public class ProjectController {
     }
 
     @PutMapping("/projects/{project_id}")
-    public Project editProject(@PathVariable(value = "project_id") UUID projectId, 
+    public Project editProjectById(@PathVariable(value = "project_id") UUID projectId, 
                                             @RequestBody @Valid Project project) {
         return projectRepository.findById(projectId).map(prj -> {
             if (project.getTitle() != null) {
@@ -93,28 +94,46 @@ public class ProjectController {
     }
     
     @PostMapping("/projects/{project_id}/files/upload")
-    public void uploadFiles(@PathVariable(value = "project_id") UUID projectId,
+    public void uploadFile(@PathVariable(value = "project_id") UUID projectId,
                                       @RequestParam("file") MultipartFile file,
                                       RedirectAttributes redirectAttributes) {
+        upload(projectId, file);
+    }
+
+    @PostMapping("/projects/{project_id}/files/upload/multiple")
+    public void uploadFile(@PathVariable(value = "project_id") UUID projectId,
+                           @RequestParam("file") MultipartFile[] files,
+                           RedirectAttributes redirectAttributes) {
+        for (MultipartFile file : files) {
+            upload(projectId, file);
+        }
+    }
+    
+    public void upload(UUID projectId, MultipartFile file) {
         projectRepository.findById(projectId).ifPresent(project -> {
             try {
                 ProjectFile projectFile = new ProjectFile();
                 projectFile.setName(file.getOriginalFilename());
                 projectFile.setProject(project);
-                
+
                 String key = project.getId() + "/" + file.getOriginalFilename();
-                
+
                 ObjectMetadata objectMetadata = new ObjectMetadata();
                 objectMetadata.setContentLength(file.getSize());
                 s3.putObject(bucket, key, file.getInputStream(), objectMetadata);
-                
+
                 projectFileRepository.save(projectFile);
-                
+
             } catch (IOException e) {
                 log.error("error uploading file", e);
                 throw new RuntimeException(e);
             }
         });
+    }
+    
+    @GetMapping("/projects/{project_id}/files")
+    public List<ProjectFile> getProjectFiles(@PathVariable(value = "project_id") UUID projectId) {
+        return projectFileRepository.findByProjectId(projectId);
     }
     
     @Transactional

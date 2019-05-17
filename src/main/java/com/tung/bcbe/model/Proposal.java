@@ -1,6 +1,5 @@
 package com.tung.bcbe.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +8,6 @@ import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -28,13 +26,11 @@ public class Proposal extends ID {
     @Column
     private Double budget;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false, referencedColumnName = "id")
-    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project project;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_id", nullable = false, referencedColumnName = "id")
-    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "sub_id", referencedColumnName = "id")
     private Contractor contractor;
 }

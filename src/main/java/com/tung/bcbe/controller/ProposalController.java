@@ -10,14 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -65,5 +69,32 @@ public class ProposalController {
     @GetMapping("/contractors/{sub_id}/proposals")
     public Page<Proposal> getProposalsBySubContractorId(@PathVariable(value = "sub_id") UUID subId, Pageable pageable) {
         return proposalRepository.findByContractorId(subId, pageable);
+    }
+    
+    @GetMapping("/proposals/{proposal_id}")
+    public Optional<Proposal> getProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
+        Optional<Proposal> proposal = proposalRepository.findById(proposalId);
+        if (!proposal.isPresent())
+            throw new ResourceNotFoundException(proposalId + " not found");
+        return proposal;
+    }
+
+    @PutMapping("/proposals/{proposal_id}")
+    public Proposal editProposal(@PathVariable(value = "proposal_id") UUID proposalId, 
+                                 @RequestBody @Valid Proposal proposal) {
+        return proposalRepository.findById(proposalId).map(current -> {
+            if (proposal.getDescription() != null) {
+                current.setDescription(proposal.getDescription());
+            }
+            if (proposal.getBudget() != null) {
+                current.setBudget(proposal.getBudget());
+            }
+            return proposalRepository.save(current);
+        }).orElseThrow(Util.notFound(proposalId));
+    }
+    
+    @DeleteMapping("/proposals/{proposal_id}")
+    public void deleteProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
+        proposalRepository.deleteById(proposalId);
     }
 }
