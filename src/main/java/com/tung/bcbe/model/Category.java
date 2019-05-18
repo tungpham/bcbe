@@ -9,6 +9,7 @@ import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -40,6 +41,6 @@ public class Category extends ID {
     @JsonIgnore
     private Template template;
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
     private List<Option> optionList;
 }

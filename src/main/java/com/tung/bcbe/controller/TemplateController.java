@@ -7,6 +7,8 @@ import com.tung.bcbe.repository.OptionRepository;
 import com.tung.bcbe.repository.TemplateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +45,16 @@ public class TemplateController {
         }).orElseThrow(Util.notFound(temId));
     }
 
+    @PostMapping
+    public Template createTemplate(@RequestBody @Valid Template template) {
+        return templateRepository.save(template);
+    }
+    
+    @GetMapping
+    public Page<Template> getAll(Pageable pageable) {
+        return templateRepository.findAll(pageable);
+    }
+    
     @GetMapping("/{tem_id}")
     public Template getTemplate(@PathVariable(name = "tem_id") UUID temId) {
         return templateRepository.findById(temId).orElseThrow(Util.notFound(temId));

@@ -10,7 +10,9 @@ import java.util.function.Supplier;
 public class Util {
 
     static Supplier<ResourceNotFoundException> notFound(UUID msg) {
-        log.error(msg + " not found");
-        return () -> new ResourceNotFoundException(msg + " not found");
+        return () ->  {
+            log.error(msg + " not found");
+            return new ResourceNotFoundException(msg + " not found");
+        };
     }
 }
