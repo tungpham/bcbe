@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"})
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt", "updatedBy"})
 @Data 
 public abstract class ID implements Serializable {
 
