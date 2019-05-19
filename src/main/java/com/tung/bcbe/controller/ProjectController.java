@@ -76,6 +76,11 @@ public class ProjectController {
         return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId));
     }
 
+    @GetMapping("/projects")
+    public Page<Project> getAllProjects(Pageable pageable) {
+        return projectRepository.findAll(pageable);
+    }
+    
     @PutMapping("/projects/{project_id}")
     public Project editProjectById(@PathVariable(value = "project_id") UUID projectId, 
                                             @RequestBody @Valid Project project) {
