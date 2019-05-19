@@ -57,7 +57,9 @@ public class TemplateController {
     
     @GetMapping("/{tem_id}")
     public Template getTemplate(@PathVariable(name = "tem_id") UUID temId) {
-        return templateRepository.findById(temId).orElseThrow(Util.notFound(temId));
+        Template template = templateRepository.findById(temId).get();
+        return template;
+//        return templateRepository.findById(temId).orElseThrow(Util.notFound(temId));
     }
 
     @DeleteMapping("/{tem_id}")

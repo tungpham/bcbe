@@ -3,8 +3,9 @@ package com.tung.bcbe.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
@@ -14,12 +15,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
 @Builder
-@Data
+@Getter
+@Setter
 @Entity(name = "category")
 @Table(name = "category")
 public class Category extends ID {
@@ -42,5 +44,5 @@ public class Category extends ID {
     private Template template;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
-    private List<Option> optionList;
+    private Set<Option> optionList;
 }
