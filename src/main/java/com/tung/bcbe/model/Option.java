@@ -32,6 +32,12 @@ public class Option extends ID {
     @Column
     private String value;
 
+    @Column
+    private Double budget;
+    
+    @Column
+    private Double duration;
+    
     @ManyToOne
     @JoinColumn(name = "cat_id", referencedColumnName = "id")
     @JsonIgnore

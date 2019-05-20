@@ -20,12 +20,21 @@ import javax.persistence.Table;
 @Table(name = "proposal")
 public class Proposal extends ID {
 
+    public static enum STATUS {
+        Submitted,
+        Awarded,
+        Inactive
+    };
+    
     @Column
     private String description;
     
     @Column
     private Double budget;
 
+    @Column
+    private String status;
+    
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project project;

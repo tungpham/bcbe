@@ -36,6 +36,9 @@ public class Project extends ID {
     @Column
     private Double budget;
     
+    @Column
+    private String status;
+    
     @ManyToOne
     @JoinColumn(name = "gen_id", referencedColumnName = "id", nullable = false)
     private Contractor contractor;

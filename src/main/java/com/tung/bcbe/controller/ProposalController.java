@@ -57,6 +57,7 @@ public class ProposalController {
         return subContractor.thenCombine(project, (sub, proj) -> {
             proposal.setContractor(sub);
             proposal.setProject(proj);
+            proposal.setStatus(Proposal.STATUS.Submitted.name());
             return proposalRepository.save(proposal);
         }).get();
     }
@@ -88,6 +89,9 @@ public class ProposalController {
             }
             if (proposal.getBudget() != null) {
                 current.setBudget(proposal.getBudget());
+            }
+            if (proposal.getStatus() != null) {
+                current.setStatus(proposal.getStatus());
             }
             return proposalRepository.save(current);
         }).orElseThrow(Util.notFound(proposalId));
