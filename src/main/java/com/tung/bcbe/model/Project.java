@@ -45,4 +45,7 @@ public class Project extends ID {
     
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private Set<ProjectFile> projectFiles;
+    
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
+    private Set<ProjectTemplate> projectTemplates;
 }

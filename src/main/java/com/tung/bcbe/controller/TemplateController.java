@@ -42,7 +42,7 @@ public class TemplateController {
         return templateRepository.findById(temId).map(template -> {
             category.setTemplate(template);
             return categoryRepository.save(category);
-        }).orElseThrow(Util.notFound(temId));
+        }).orElseThrow(Util.notFound(temId, Template.class));
     }
 
     @PostMapping
@@ -57,7 +57,7 @@ public class TemplateController {
     
     @GetMapping("/{tem_id}")
     public Template getTemplate(@PathVariable(name = "tem_id") UUID temId) {
-        return templateRepository.findById(temId).orElseThrow(Util.notFound(temId));
+        return templateRepository.findById(temId).orElseThrow(Util.notFound(temId, Template.class));
     }
 
     @DeleteMapping("/{tem_id}")
@@ -75,6 +75,6 @@ public class TemplateController {
                 tem.setDescription(template.getDescription());
             }
             return templateRepository.save(tem);
-        }).orElseThrow(Util.notFound(temId));
+        }).orElseThrow(Util.notFound(temId, Template.class));
     }
 }

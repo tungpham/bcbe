@@ -1,4 +1,6 @@
 DROP TABLE IF EXISTS projectfile;
+DROP TABLE IF EXISTS contractorfile;
+DROP TABLE IF EXISTS project_template;
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
 DROP TABLE IF EXISTS contractor;
@@ -21,8 +23,19 @@ CREATE TABLE address (
 CREATE TABLE contractor
 (
     id uuid primary key,
-    email varchar(50) not null ,
+    email varchar(50) not null,
+    status varchar(10),
+    status_reason varchar(300),
     address_id uuid references address,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE contractorfile (
+    id uuid primary key,
+    name varchar(100),
+    con_id uuid references contractor,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -90,6 +103,15 @@ CREATE TABLE option (
     budget numeric(10, 2),
     duration numeric(10,2),
     cat_id uuid references category not null,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE project_template (
+    id uuid primary key,
+    proj_id uuid references project,
+    tem_id uuid references template,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

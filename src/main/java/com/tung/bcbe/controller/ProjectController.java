@@ -1,21 +1,21 @@
 package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import com.google.common.io.ByteStreams;
+import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
+import com.tung.bcbe.model.ProjectTemplate;
+import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ProjectFileRepository;
 import com.tung.bcbe.repository.ProjectRepository;
+import com.tung.bcbe.repository.ProjectTemplateRepository;
+import com.tung.bcbe.repository.TemplateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,9 +31,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +50,12 @@ public class ProjectController {
     private ProjectFileRepository projectFileRepository;
     
     @Autowired
+    private TemplateRepository templateRepository;
+    
+    @Autowired
+    private ProjectTemplateRepository projectTemplateRepository;
+    
+    @Autowired
     private AmazonS3 s3;
     
     @Value("${S3_BUCKET}")
@@ -63,7 +67,7 @@ public class ProjectController {
         return contractorRepository.findById(genId).map(genContractor -> {
             project.setContractor(genContractor);
             return projectRepository.save(project);
-        }).orElseThrow(Util.notFound(genId));
+        }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
 
     @GetMapping("/contractors/{gen_id}/projects")
@@ -73,7 +77,7 @@ public class ProjectController {
     
     @GetMapping("/projects/{project_id}")
     public Project getProjectById(@PathVariable(value = "project_id") UUID projectId) {
-        return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId));
+        return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId, Project.class));
     }
 
     @GetMapping("/projects")
@@ -95,7 +99,28 @@ public class ProjectController {
                 prj.setBudget(project.getBudget());
             }
             return projectRepository.save(prj);
-        }).orElseThrow(Util.notFound(projectId));
+        }).orElseThrow(Util.notFound(projectId, Project.class));
+    }
+    
+    @PostMapping("/projects/{project_id}/templates/{tem_id}")
+    public Project addTemplateToProject(@PathVariable(value = "project_id") UUID projectId,
+                                        @PathVariable(value = "tem_id") UUID temId) {
+        return projectRepository.findById(projectId).map(project -> {
+            templateRepository.findById(temId).map(template -> {
+                ProjectTemplate projectTemplate = new ProjectTemplate();
+                projectTemplate.setProject(project);
+                projectTemplate.setTemplate(template);
+                return projectTemplateRepository.save(projectTemplate);
+            }).orElseThrow(Util.notFound(temId, Template.class));
+            return projectRepository.save(project);
+        }).orElseThrow(Util.notFound(projectId, Project.class));
+    }
+
+    @Transactional
+    @DeleteMapping("/projects/{project_id}/templates/{tem_id}")
+    public void removeTemplateFromProject(@PathVariable(value = "project_id") UUID projectId,
+                                          @PathVariable(value = "tem_id") UUID temId) {
+        projectTemplateRepository.deleteProjectTemplateByProjectIdAndTemplateId(projectId, temId);
     }
     
     @PostMapping("/projects/{project_id}/files/upload")
@@ -122,13 +147,9 @@ public class ProjectController {
                 projectFile.setProject(project);
 
                 String key = project.getId() + "/" + file.getOriginalFilename();
-
-                ObjectMetadata objectMetadata = new ObjectMetadata();
-                objectMetadata.setContentLength(file.getSize());
-                s3.putObject(bucket, key, file.getInputStream(), objectMetadata);
-
+                Util.putFile(s3, bucket, key, file);
                 projectFileRepository.save(projectFile);
-
+                
             } catch (IOException e) {
                 log.error("error uploading file", e);
                 throw new RuntimeException(e);
@@ -156,25 +177,6 @@ public class ProjectController {
     public ResponseEntity<byte[]> download(@PathVariable(value = "project_id") UUID projectId,
                                            @PathVariable(value = "file_name") String fileName) throws IOException {
         String key = projectId + "/" + fileName;
-        S3Object s3Object = s3.getObject(bucket, key);
-        InputStream is = s3Object.getObjectContent();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteStreams.copy(is, baos);
-        is.close();
-        
-        return ResponseEntity.ok().contentType(contentType(fileName))
-                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + fileName + "\"")
-                .body(baos.toByteArray());
-    }
-
-    private MediaType contentType(String keyname) {
-        String[] arr = keyname.split("\\.");
-        String type = arr[arr.length-1];
-        switch(type) {
-            case "txt": return MediaType.TEXT_PLAIN;
-            case "png": return MediaType.IMAGE_PNG;
-            case "jpg": return MediaType.IMAGE_JPEG;
-            default: return MediaType.APPLICATION_OCTET_STREAM;
-        }
+        return Util.download(s3, bucket, key);
     }
 }

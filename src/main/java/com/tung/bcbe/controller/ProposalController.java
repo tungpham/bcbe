@@ -48,16 +48,16 @@ public class ProposalController {
 
         CompletableFuture<Contractor> subContractor = CompletableFuture.supplyAsync(() ->
                 contractorRepository.findById(subId))
-                .thenApply(x -> x.orElseThrow(Util.notFound(subId)));
+                .thenApply(x -> x.orElseThrow(Util.notFound(subId, Contractor.class)));
 
         CompletableFuture<Project> project = CompletableFuture.supplyAsync(() ->
                 projectRepository.findById(projectId))
-                .thenApply(x -> x.orElseThrow(Util.notFound(projectId)));
+                .thenApply(x -> x.orElseThrow(Util.notFound(projectId, Project.class)));
 
         return subContractor.thenCombine(project, (sub, proj) -> {
             proposal.setContractor(sub);
             proposal.setProject(proj);
-            proposal.setStatus(Proposal.STATUS.Submitted.name());
+            proposal.setStatus(Proposal.STATUS.SUBMITTED);
             return proposalRepository.save(proposal);
         }).get();
     }
@@ -94,7 +94,7 @@ public class ProposalController {
                 current.setStatus(proposal.getStatus());
             }
             return proposalRepository.save(current);
-        }).orElseThrow(Util.notFound(proposalId));
+        }).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
     
     @DeleteMapping("/proposals/{proposal_id}")

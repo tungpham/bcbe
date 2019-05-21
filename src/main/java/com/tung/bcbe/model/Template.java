@@ -31,4 +31,7 @@ public class Template extends ID {
 
     @OneToMany(mappedBy = "template", fetch = FetchType.EAGER)
     private Set<Category> categoryList;
+    
+    @OneToMany(mappedBy = "template")
+    private Set<ProjectTemplate> projectTemplates;
 }

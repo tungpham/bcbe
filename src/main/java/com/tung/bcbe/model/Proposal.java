@@ -8,6 +8,8 @@ import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -20,10 +22,10 @@ import javax.persistence.Table;
 @Table(name = "proposal")
 public class Proposal extends ID {
 
-    public static enum STATUS {
-        Submitted,
-        Awarded,
-        Inactive
+    public enum STATUS {
+        SUBMITTED,
+        AWARDED,
+        INACTIVE
     };
     
     @Column
@@ -32,8 +34,8 @@ public class Proposal extends ID {
     @Column
     private Double budget;
 
-    @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private STATUS status;
     
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id")

@@ -3,8 +3,9 @@ package com.tung.bcbe.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.PersistenceConstructor;
 
@@ -17,17 +18,18 @@ import javax.persistence.Table;
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
 @Builder
-@Data
-@Entity(name = "projectfile")
-@Table(name = "projectfile")
+@Getter
+@Setter
+@Entity(name = "contractorfile")
+@Table(name = "contractorfile")
 @Slf4j
-public class ProjectFile extends ID {
-    
+public class ContractorFile extends ID {
+
     @Column
     private String name;
-    
+
     @ManyToOne
-    @JoinColumn(name = "proj_id", referencedColumnName = "id")
+    @JoinColumn(name = "con_id", referencedColumnName = "id")
     @JsonIgnore
-    private Project project;
+    private Contractor contractor;
 }

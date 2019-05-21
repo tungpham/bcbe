@@ -34,12 +34,12 @@ public class CategoryController {
         return categoryRepository.findById(catId).map(cat -> {
             option.setCategory(cat);
             return optionRepository.save(option);
-        }).orElseThrow(Util.notFound(catId));
+        }).orElseThrow(Util.notFound(catId, Category.class));
     }
     
     @GetMapping("/{cat_id}")
     public Category get(@PathVariable(name = "cat_id") UUID catId) {
-        return categoryRepository.findById(catId).orElseThrow(Util.notFound(catId));
+        return categoryRepository.findById(catId).orElseThrow(Util.notFound(catId, Category.class));
     }
 
     @DeleteMapping("/{cat_id}")
@@ -55,6 +55,6 @@ public class CategoryController {
             if (category.getType() != null) cat.setType(category.getType());
             if (category.getValue() != null) cat.setValue(category.getValue());
             return categoryRepository.save(cat);
-        }).orElseThrow(Util.notFound(catId));
+        }).orElseThrow(Util.notFound(catId, Category.class));
     }
 }
