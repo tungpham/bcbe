@@ -158,6 +158,7 @@ public class ContractorController {
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
     
+    @Transactional
     @DeleteMapping("/{con_id}/specialties/{spec_id}")
     public void removeSpecialtyFromContractor(@PathVariable(name = "con_id") UUID conId,
                                               @PathVariable(name = "spec_id") UUID specId) {

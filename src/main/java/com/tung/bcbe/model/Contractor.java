@@ -49,5 +49,8 @@ public class Contractor extends ID {
     
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ContractorFile> contractorFiles;
+    
+    @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER)
+    private Set<ContractorSpecialty> contractorSpecialties;
 }
 
