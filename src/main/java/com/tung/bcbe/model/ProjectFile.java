@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
@@ -20,7 +19,6 @@ import javax.persistence.Table;
 @Data
 @Entity(name = "projectfile")
 @Table(name = "projectfile")
-@Slf4j
 public class ProjectFile extends ID {
     
     @Column

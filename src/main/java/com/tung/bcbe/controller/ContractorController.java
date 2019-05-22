@@ -4,8 +4,12 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.ContractorFile;
+import com.tung.bcbe.model.ContractorSpecialty;
+import com.tung.bcbe.model.Specialty;
 import com.tung.bcbe.repository.ContractorRepository;
+import com.tung.bcbe.repository.ContractorSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectRepository;
+import com.tung.bcbe.repository.SpecialtyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +44,12 @@ public class ContractorController {
 
     @Autowired
     private ProjectRepository projectRepository;
+    
+    @Autowired
+    private SpecialtyRepository specialtyRepository;
+    
+    @Autowired
+    private ContractorSpecialtyRepository contractorSpecialtyRepository;
     
     @Autowired
     private AmazonS3 s3;
@@ -132,5 +142,25 @@ public class ContractorController {
             contractor.getContractorFiles().removeIf(contractorFile -> contractorFile.getName().equals(filename));
             return contractorRepository.save(contractor);
         }).orElseThrow(Util.notFound(conId, Contractor.class));
+    }
+    
+    @PostMapping("/{con_id}/specialties/{spec_id}")
+    public Contractor addSpecialtyToContractor(@PathVariable(name = "con_id") UUID conId,
+                                               @PathVariable(name = "spec_id") UUID specId) {
+        return contractorRepository.findById(conId).map(contractor -> {
+            specialtyRepository.findById(specId).map(specialty -> {
+                ContractorSpecialty contractorSpecialty = new ContractorSpecialty();
+                contractorSpecialty.setContractor(contractor);
+                contractorSpecialty.setSpecialty(specialty);
+                return contractorSpecialtyRepository.save(contractorSpecialty);
+            }).orElseThrow(Util.notFound(specId, Specialty.class));
+            return contractorRepository.save(contractor);
+        }).orElseThrow(Util.notFound(conId, Contractor.class));
+    }
+    
+    @DeleteMapping("/{con_id}/specialties/{spec_id}")
+    public void removeSpecialtyFromContractor(@PathVariable(name = "con_id") UUID conId,
+                                              @PathVariable(name = "spec_id") UUID specId) {
+        contractorSpecialtyRepository.deleteContractorSpecialtiesByContractorIdAndSpecialtyId(conId, specId);
     }
 }

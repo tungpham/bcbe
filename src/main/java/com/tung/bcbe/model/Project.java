@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
@@ -24,7 +23,6 @@ import java.util.Set;
 @Setter
 @Entity(name = "project")
 @Table(name = "project")
-@Slf4j
 public class Project extends ID {
 
     @Column
@@ -48,4 +46,7 @@ public class Project extends ID {
     
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private Set<ProjectTemplate> projectTemplates;
+    
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
+    private Set<ProjectSpecialty> projectSpecialties;
 }

@@ -18,9 +18,9 @@ import javax.persistence.Table;
 @Builder
 @Getter
 @Setter
-@Entity(name = "project_template")
-@Table(name = "project_template")
-public class ProjectTemplate extends ID {
+@Entity(name = "project_specialty")
+@Table(name = "project_specialty")
+public class ProjectSpecialty extends ID {
     
     @ManyToOne
     @JoinColumn(name = "proj_id", referencedColumnName = "id")
@@ -28,6 +28,6 @@ public class ProjectTemplate extends ID {
     private Project project;
     
     @ManyToOne
-    @JoinColumn(name = "tem_id", referencedColumnName = "id")
-    private Template template;
+    @JoinColumn(name = "spec_id", referencedColumnName = "id")
+    private Specialty specialty;
 }

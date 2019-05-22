@@ -34,8 +34,12 @@ public class Util {
         ByteStreams.copy(is, baos);
         is.close();
 
+        String[] parts = key.split("/");
+        String filename = parts[parts.length - 1];
+        log.info("filename is " + filename);
+        
         return ResponseEntity.ok().contentType(contentType(key))
-                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + key + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + filename + "\"")
                 .body(baos.toByteArray());
     }
 

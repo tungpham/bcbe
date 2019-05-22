@@ -4,12 +4,16 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
+import com.tung.bcbe.model.ProjectSpecialty;
 import com.tung.bcbe.model.ProjectTemplate;
+import com.tung.bcbe.model.Specialty;
 import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ProjectFileRepository;
 import com.tung.bcbe.repository.ProjectRepository;
+import com.tung.bcbe.repository.ProjectSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
+import com.tung.bcbe.repository.SpecialtyRepository;
 import com.tung.bcbe.repository.TemplateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +58,12 @@ public class ProjectController {
     
     @Autowired
     private ProjectTemplateRepository projectTemplateRepository;
+    
+    @Autowired
+    private SpecialtyRepository specialtyRepository;
+    
+    @Autowired
+    private ProjectSpecialtyRepository projectSpecialtyRepository;
     
     @Autowired
     private AmazonS3 s3;
@@ -105,15 +115,14 @@ public class ProjectController {
     @PostMapping("/projects/{project_id}/templates/{tem_id}")
     public Project addTemplateToProject(@PathVariable(value = "project_id") UUID projectId,
                                         @PathVariable(value = "tem_id") UUID temId) {
-        return projectRepository.findById(projectId).map(project -> {
+        return projectRepository.findById(projectId).map(project -> 
             templateRepository.findById(temId).map(template -> {
                 ProjectTemplate projectTemplate = new ProjectTemplate();
                 projectTemplate.setProject(project);
                 projectTemplate.setTemplate(template);
-                return projectTemplateRepository.save(projectTemplate);
-            }).orElseThrow(Util.notFound(temId, Template.class));
-            return projectRepository.save(project);
-        }).orElseThrow(Util.notFound(projectId, Project.class));
+                projectTemplateRepository.save(projectTemplate);
+                return projectRepository.save(project);
+        }).orElseThrow(Util.notFound(temId, Template.class))).orElseThrow(Util.notFound(projectId, Project.class));
     }
 
     @Transactional
@@ -178,5 +187,25 @@ public class ProjectController {
                                            @PathVariable(value = "file_name") String fileName) throws IOException {
         String key = projectId + "/" + fileName;
         return Util.download(s3, bucket, key);
+    }
+    
+    @PostMapping("/projects/{project_id}/specialties/{spec_id}")
+    public Project addSpecialtyToProject(@PathVariable(value = "project_id") UUID projectId,
+                                         @PathVariable(value = "spec_id") UUID specId) {
+        return projectRepository.findById(projectId).map(project -> 
+            specialtyRepository.findById(specId).map(specialty -> { 
+                ProjectSpecialty projectSpecialty = new ProjectSpecialty();
+                projectSpecialty.setProject(project);
+                projectSpecialty.setSpecialty(specialty);
+                projectSpecialtyRepository.save(projectSpecialty);
+                return projectRepository.save(project);
+        }).orElseThrow(Util.notFound(specId, Specialty.class))).orElseThrow(Util.notFound(projectId, Project.class));
+    }
+    
+    @Transactional
+    @DeleteMapping("/projects/{project_id}/specialties/{spec_id}")
+    public void removeSpecialtyFromProject(@PathVariable(value = "project_id") UUID projectId,
+                                              @PathVariable(value = "spec_id") UUID specId) {
+        projectSpecialtyRepository.deleteProjectSpecialtiesByProjectIdAndSpecialtyId(projectId, specId);
     }
 }

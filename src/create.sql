@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS projectfile;
 DROP TABLE IF EXISTS contractorfile;
 DROP TABLE IF EXISTS project_template;
+DROP TABLE IF EXISTS project_specialty;
+DROP TABLE IF EXISTS contractor_specialty;
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
 DROP TABLE IF EXISTS contractor;
@@ -8,6 +10,7 @@ DROP TABLE IF EXISTS address;
 DROP TABLE IF EXISTS option;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS template;
+DROP TABLE IF EXISTS specialty;
 
 CREATE TABLE address (
     id uuid primary key,
@@ -116,3 +119,32 @@ CREATE TABLE project_template (
     updated_at timestamp not null,
     updated_by varchar(50)
 );
+
+CREATE TABLE specialty (
+    id uuid primary key,
+    name varchar(50),
+    description varchar(200),
+    value varchar(50),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE project_specialty (
+    id uuid primary key,
+    proj_id uuid references project,
+    spec_id uuid references specialty,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE contractor_specialty (
+    id uuid primary key,
+    con_id uuid references contractor,
+    spec_id uuid references specialty,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+

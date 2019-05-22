@@ -18,16 +18,16 @@ import javax.persistence.Table;
 @Builder
 @Getter
 @Setter
-@Entity(name = "project_template")
-@Table(name = "project_template")
-public class ProjectTemplate extends ID {
+@Entity(name = "contractor_specialty")
+@Table(name = "contractor_specialty")
+public class ContractorSpecialty extends ID {
     
     @ManyToOne
-    @JoinColumn(name = "proj_id", referencedColumnName = "id")
+    @JoinColumn(name = "con_id", referencedColumnName = "id")
     @JsonIgnore
-    private Project project;
+    private Contractor contractor;
     
     @ManyToOne
-    @JoinColumn(name = "tem_id", referencedColumnName = "id")
-    private Template template;
+    @JoinColumn(name = "spec_id", referencedColumnName = "id")
+    private Specialty specialty;
 }
