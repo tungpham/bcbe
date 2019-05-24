@@ -79,7 +79,7 @@ public class ContractorController {
         return contractorRepository.findById(genId).map(gen -> {
             Address existing = gen.getAddress();
             Address update = genContractor.getAddress();
-            if (existing != null) {
+            if (existing != null && update != null) {
                 existing.setName(update.getName());
                 existing.setStreet(update.getStreet());
                 existing.setCity(update.getCity());
