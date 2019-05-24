@@ -130,7 +130,7 @@ public class ContractorController {
     @GetMapping("/{con_id}/files/{filename}")
     public ResponseEntity<byte[]> download(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "filename") String filename) throws IOException {
-        return Util.download(s3, bucket, filename);
+        return Util.download(s3, bucket, conId + "/" + filename);
     }
 
     @Transactional
