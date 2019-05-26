@@ -164,3 +164,7 @@ create table proposal_option (
     updated_by varchar(50)
 );
 
+select * from proposal_option;
+select * from category;
+select * from template;
+
