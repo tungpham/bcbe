@@ -148,3 +148,19 @@ CREATE TABLE contractor_specialty (
     updated_by varchar(50)
 );
 
+drop table proposal_option;
+
+create table proposal_option (
+    id uuid primary key,  
+    prop_id uuid references proposal,
+    cat_id uuid references category,
+    name varchar(100),
+    description varchar(200),
+    value varchar(1000),
+    budget numeric(10, 2),
+    duration numeric(10,2),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+

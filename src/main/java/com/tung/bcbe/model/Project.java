@@ -39,7 +39,7 @@ public class Project extends ID {
     
     @ManyToOne
     @JoinColumn(name = "gen_id", referencedColumnName = "id", nullable = false)
-    private Contractor contractor;
+    private Contractor genContractor;
     
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private Set<ProjectFile> projectFiles;

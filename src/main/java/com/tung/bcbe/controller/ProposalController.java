@@ -1,16 +1,23 @@
 package com.tung.bcbe.controller;
 
+import com.tung.bcbe.dto.ProposalTemCatOptionDetail;
+import com.tung.bcbe.model.Category;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.Proposal;
+import com.tung.bcbe.model.ProposalOption;
+import com.tung.bcbe.model.Template;
+import com.tung.bcbe.repository.CategoryRepository;
 import com.tung.bcbe.repository.ContractorRepository;
+import com.tung.bcbe.repository.OptionRepository;
 import com.tung.bcbe.repository.ProjectRepository;
+import com.tung.bcbe.repository.ProjectTemplateRepository;
+import com.tung.bcbe.repository.ProposalOptionRepository;
 import com.tung.bcbe.repository.ProposalRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +28,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -39,6 +49,18 @@ public class ProposalController {
 
     @Autowired
     private ProposalRepository proposalRepository;
+    
+    @Autowired
+    private CategoryRepository categoryRepository;
+    
+    @Autowired
+    private OptionRepository optionRepository;
+    
+    @Autowired
+    private ProposalOptionRepository proposalOptionRepository;
+    
+    @Autowired
+    private ProjectTemplateRepository projectTemplateRepository;
 
     @PostMapping("/contractors/{sub_id}/projects/{project_id}/proposals")
     public Proposal createProposal(@PathVariable(value = "sub_id") UUID subId,
@@ -55,7 +77,7 @@ public class ProposalController {
                 .thenApply(x -> x.orElseThrow(Util.notFound(projectId, Project.class)));
 
         return subContractor.thenCombine(project, (sub, proj) -> {
-            proposal.setContractor(sub);
+            proposal.setSubContractor(sub);
             proposal.setProject(proj);
             proposal.setStatus(Proposal.STATUS.SUBMITTED);
             return proposalRepository.save(proposal);
@@ -69,15 +91,12 @@ public class ProposalController {
 
     @GetMapping("/contractors/{sub_id}/proposals")
     public Page<Proposal> getProposalsBySubContractorId(@PathVariable(value = "sub_id") UUID subId, Pageable pageable) {
-        return proposalRepository.findByContractorId(subId, pageable);
+        return proposalRepository.findBySubContractorId(subId, pageable);
     }
     
     @GetMapping("/proposals/{proposal_id}")
-    public Optional<Proposal> getProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
-        Optional<Proposal> proposal = proposalRepository.findById(proposalId);
-        if (!proposal.isPresent())
-            throw new ResourceNotFoundException(proposalId + " not found");
-        return proposal;
+    public Proposal getProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
+        return proposalRepository.findById(proposalId).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
 
     @PutMapping("/proposals/{proposal_id}")
@@ -100,5 +119,47 @@ public class ProposalController {
     @DeleteMapping("/proposals/{proposal_id}")
     public void deleteProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
         proposalRepository.deleteById(proposalId);
+    }
+    
+    @PostMapping("/proposals/{prop_id}/categories/{cat_id}/options")
+    public ProposalOption addProposalOption(@PathVariable(value = "prop_id") UUID propId, 
+                                            @PathVariable(value = "cat_id") UUID catId, 
+                                            @RequestBody @Valid ProposalOption proposalOption) {
+        return proposalRepository.findById(propId).map(proposal -> 
+            categoryRepository.findById(catId).map(category -> {
+                proposalOption.setCategory(category);
+                proposalOption.setProposal(proposal);
+                return proposalOptionRepository.save(proposalOption);
+            }).orElseThrow(Util.notFound(catId, Category.class))
+        ).orElseThrow(Util.notFound(propId, Proposal.class));
+    }
+    
+    @GetMapping("/proposals/{prop_id}/categories/{cat_id}")
+    public Page<ProposalOption> getProposalOptionByCategory(@PathVariable(value = "prop_id") UUID propId,
+                                                  @PathVariable(value = "cat_id") UUID catId, Pageable pageable) {
+        return proposalOptionRepository.findByProposalIdAndCategoryId(propId, catId, pageable);
+    }
+
+    @GetMapping("/proposals/{prop_id}/temCatOptionDetail")
+    public ProposalTemCatOptionDetail getProposalOptions(@PathVariable(value = "prop_id") UUID propId) {
+        return proposalRepository.findById(propId).map(proposal -> {
+            ProposalTemCatOptionDetail proposalTemCatOptionDetail = new ProposalTemCatOptionDetail();
+            proposalTemCatOptionDetail.setProposal(proposal);
+            Project project  = proposal.getProject();
+            log.info("project is " + project);
+            project.getProjectTemplates().forEach(projectTemplate -> {
+                Template template = projectTemplate.getTemplate();
+                Map<UUID, List<Map<UUID, List<ProposalOption>>>> temCatsMap = new HashMap<>();
+                temCatsMap.put(template.getId(), new ArrayList<>());
+                template.getCategoryList().forEach(category -> {
+                    List<ProposalOption> options = proposalOptionRepository.findByProposalIdAndCategoryId(propId, category.getId());
+                    Map<UUID, List<ProposalOption>> catOptionsMap = new HashMap<>();
+                    catOptionsMap.put(category.getId(), options);
+                    temCatsMap.get(template.getId()).add(catOptionsMap);
+                });
+                proposalTemCatOptionDetail.getTemCatOptionDetail().add(temCatsMap);
+            });
+            return proposalTemCatOptionDetail;
+        }).orElseThrow(Util.notFound(propId, Proposal.class));
     }
 }

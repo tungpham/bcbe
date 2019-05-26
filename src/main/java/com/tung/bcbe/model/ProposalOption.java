@@ -10,42 +10,41 @@ import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
 @Builder
 @Getter
 @Setter
-@Entity(name = "category")
-@Table(name = "category")
-public class Category extends ID {
+@Entity(name = "proposal_option")
+@Table(name = "proposal_option")
+public class ProposalOption extends ID {
 
     @Column
     private String name;
 
     @Column
-    private String type;
+    private String description;
 
     @Column
     private String value;
 
     @Column
-    private String description;
+    private Double budget;
 
-    @ManyToOne
-    @JoinColumn(name = "tem_id", referencedColumnName = "id")
-    @JsonIgnore
-    private Template template;
-
-    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
-    private Set<Option> optionList;
+    @Column
+    private Double duration;
     
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private Set<ProposalOption> proposalOptions;
+    @ManyToOne
+    @JoinColumn(name = "prop_id", referencedColumnName = "id")
+    @JsonIgnore
+    private Proposal proposal;
+    
+    @ManyToOne
+    @JoinColumn(name = "cat_id", referencedColumnName = "id")
+    @JsonIgnore
+    private Category category;
 }

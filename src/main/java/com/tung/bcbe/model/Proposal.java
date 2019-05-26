@@ -12,7 +12,9 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
@@ -43,5 +45,8 @@ public class Proposal extends ID {
 
     @ManyToOne
     @JoinColumn(name = "sub_id", referencedColumnName = "id")
-    private Contractor contractor;
+    private Contractor subContractor;
+    
+    @OneToMany(mappedBy = "proposal")
+    private Set<ProposalOption> proposalOptions;
 }

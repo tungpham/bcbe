@@ -75,14 +75,14 @@ public class ProjectController {
     public Project createProject(@PathVariable(value = "gen_id") UUID genId,
                                  @Valid @RequestBody Project project) {
         return contractorRepository.findById(genId).map(genContractor -> {
-            project.setContractor(genContractor);
+            project.setGenContractor(genContractor);
             return projectRepository.save(project);
         }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
 
     @GetMapping("/contractors/{gen_id}/projects")
     public Page<Project> getProjectsByGenContractor(@PathVariable(value = "gen_id") UUID genId, Pageable pageable) {
-        return projectRepository.findByContractorId(genId, pageable);
+        return projectRepository.findByGenContractorId(genId, pageable);
     }
     
     @GetMapping("/projects/{project_id}")
