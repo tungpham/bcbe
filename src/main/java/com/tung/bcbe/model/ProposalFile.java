@@ -3,8 +3,9 @@ package com.tung.bcbe.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
@@ -16,7 +17,8 @@ import javax.persistence.Table;
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
 @Builder
-@Data
+@Getter
+@Setter
 @Entity(name = "proposalfile")
 @Table(name = "proposalfile")
 public class ProposalFile extends ID {
