@@ -111,6 +111,11 @@ public class ProjectController {
             return projectRepository.save(prj);
         }).orElseThrow(Util.notFound(projectId, Project.class));
     }
+
+    @DeleteMapping("/projects/{project_id}")
+    public void deleteProjectById(@PathVariable(value = "project_id") UUID projectId) {
+        projectRepository.deleteById(projectId);
+    }
     
     @PostMapping("/projects/{project_id}/templates/{tem_id}")
     public Project addTemplateToProject(@PathVariable(value = "project_id") UUID projectId,

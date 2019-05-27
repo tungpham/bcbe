@@ -39,6 +39,9 @@ public class Proposal extends ID {
     @Enumerated(EnumType.STRING)
     private STATUS status;
     
+    @Column
+    private Double duration;
+    
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project project;

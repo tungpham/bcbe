@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS contractorfile;
 DROP TABLE IF EXISTS project_template;
 DROP TABLE IF EXISTS project_specialty;
 DROP TABLE IF EXISTS contractor_specialty;
+DROP TABLE IF EXISTS proposal_option;
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
 DROP TABLE IF EXISTS contractor;
@@ -70,6 +71,7 @@ CREATE TABLE proposal (
     description varchar(100),
     budget numeric(10,2),
     status varchar(10),
+    duration numeric(10,2),
     project_id uuid references project,
     sub_id uuid references contractor,
     created_at timestamp not null,
@@ -148,8 +150,6 @@ CREATE TABLE contractor_specialty (
     updated_by varchar(50)
 );
 
-drop table proposal_option;
-
 create table proposal_option (
     id uuid primary key,  
     prop_id uuid references proposal,
@@ -163,8 +163,4 @@ create table proposal_option (
     updated_at timestamp not null,
     updated_by varchar(50)
 );
-
-select * from proposal_option;
-select * from category;
-select * from template;
 
