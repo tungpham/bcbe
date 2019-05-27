@@ -1,10 +1,12 @@
 package com.tung.bcbe.controller;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.dto.ProposalTemCatOptionDetail;
 import com.tung.bcbe.model.Category;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.Proposal;
+import com.tung.bcbe.model.ProposalFile;
 import com.tung.bcbe.model.ProposalOption;
 import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.CategoryRepository;
@@ -12,12 +14,15 @@ import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.OptionRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
+import com.tung.bcbe.repository.ProposalFileRepository;
 import com.tung.bcbe.repository.ProposalOptionRepository;
 import com.tung.bcbe.repository.ProposalRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +30,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +71,16 @@ public class ProposalController {
     
     @Autowired
     private ProjectTemplateRepository projectTemplateRepository;
+    
+    @Autowired
+    private ProposalFileRepository proposalFileRepository;
 
+    @Autowired
+    AmazonS3 s3;
+
+    @Value("${S3_BUCKET_PROPOSAL}")
+    private String bucket;
+    
     @PostMapping("/contractors/{sub_id}/projects/{project_id}/proposals")
     public Proposal createProposal(@PathVariable(value = "sub_id") UUID subId,
                                    @PathVariable(value = "project_id") UUID projectId,
@@ -138,6 +157,63 @@ public class ProposalController {
     public Page<ProposalOption> getProposalOptionByCategory(@PathVariable(value = "prop_id") UUID propId,
                                                   @PathVariable(value = "cat_id") UUID catId, Pageable pageable) {
         return proposalOptionRepository.findByProposalIdAndCategoryId(propId, catId, pageable);
+    }
+
+    @PostMapping("/proposals/{proposal_id}/files/upload")
+    public void uploadFile(@PathVariable(value = "proposal_id") UUID proposalId,
+                           @RequestParam("file") MultipartFile file,
+                           RedirectAttributes redirectAttributes) {
+        upload(proposalId, file);
+    }
+
+    @PostMapping("/proposals/{proposal_id}/files/upload/multiple")
+    public void uploadFile(@PathVariable(value = "proposal_id") UUID proposalId,
+                           @RequestParam("file") MultipartFile[] files,
+                           RedirectAttributes redirectAttributes) {
+        for (MultipartFile file : files) {
+            upload(proposalId, file);
+        }
+    }
+
+    public void upload(UUID proposalId, MultipartFile file) {
+        proposalRepository.findById(proposalId).ifPresent(proposal -> {
+            try {
+                ProposalFile proposalFile = new ProposalFile();
+                proposalFile.setName(file.getOriginalFilename());
+                proposalFile.setProposal(proposal);
+
+                String key = proposal.getId() + "/" + file.getOriginalFilename();
+                Util.putFile(s3, bucket, key, file);
+                proposalFileRepository.save(proposalFile);
+
+            } catch (IOException e) {
+                log.error("error uploading file", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @GetMapping("/proposals/{proposal_id}/files")
+    public List<ProposalFile> getProjectFiles(@PathVariable(value = "proposal_id") UUID proposalId) {
+        return proposalFileRepository.findByProposalId(proposalId);
+    }
+
+    @Transactional
+    @DeleteMapping("/proposals/{proposal_id}/files/{file_name}")
+    public void deleteFile(@PathVariable(value = "project_id") UUID proposalId,
+                           @PathVariable(value = "file_name") String fileName) {
+        proposalRepository.findById(proposalId).ifPresent(proposal -> {
+            String key = proposal.getId() + "/" + fileName;
+            s3.deleteObject(bucket, key);
+            proposalFileRepository.deleteByName(fileName);
+        });
+    }
+
+    @GetMapping("/proposals/{proposal_id}/files/{file_name}")
+    public ResponseEntity<byte[]> download(@PathVariable(value = "proposal_id") UUID proposalId,
+                                           @PathVariable(value = "file_name") String fileName) throws IOException {
+        String key = proposalId + "/" + fileName;
+        return Util.download(s3, bucket, key);
     }
 
     @GetMapping("/proposals/{prop_id}/temCatOptionDetail")

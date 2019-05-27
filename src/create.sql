@@ -71,9 +71,18 @@ CREATE TABLE proposal (
     description varchar(100),
     budget numeric(10,2),
     status varchar(10),
-    duration numeric(10,2),
+    duration numeric(10,2), 
     project_id uuid references project,
     sub_id uuid references contractor,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE proposalfile (
+    id uuid primary key,
+    name varchar(100),
+    prop_id uuid references proposal,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
