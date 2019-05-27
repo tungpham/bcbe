@@ -194,13 +194,13 @@ public class ProposalController {
     }
 
     @GetMapping("/proposals/{proposal_id}/files")
-    public List<ProposalFile> getProjectFiles(@PathVariable(value = "proposal_id") UUID proposalId) {
+    public List<ProposalFile> getProposalFiles(@PathVariable(value = "proposal_id") UUID proposalId) {
         return proposalFileRepository.findByProposalId(proposalId);
     }
 
     @Transactional
     @DeleteMapping("/proposals/{proposal_id}/files/{file_name}")
-    public void deleteFile(@PathVariable(value = "project_id") UUID proposalId,
+    public void deleteFile(@PathVariable(value = "proposal_id") UUID proposalId,
                            @PathVariable(value = "file_name") String fileName) {
         proposalRepository.findById(proposalId).ifPresent(proposal -> {
             String key = proposal.getId() + "/" + fileName;
