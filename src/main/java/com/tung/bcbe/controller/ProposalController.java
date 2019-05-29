@@ -115,8 +115,13 @@ public class ProposalController {
     }
 
     @GetMapping("/contractors/{sub_id}/proposals")
-    public Page<Proposal> getProposalsBySubContractorId(@PathVariable(value = "sub_id") UUID subId, Pageable pageable) {
-        return proposalRepository.findBySubContractorId(subId, pageable);
+    public Page<Proposal> getProposalsBySubContractorId(@PathVariable(value = "sub_id") UUID subId, 
+                                                        @RequestParam(value = "status", required = false) Proposal.STATUS status, 
+                                                        Pageable pageable) {
+        if (status == null)
+            return proposalRepository.findBySubContractorId(subId, pageable);
+        else
+            return proposalRepository.findBySubContractorIdAndStatus(subId, status, pageable);
     }
     
     @GetMapping("/proposals/{proposal_id}")

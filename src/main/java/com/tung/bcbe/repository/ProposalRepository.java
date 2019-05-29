@@ -12,6 +12,8 @@ public interface ProposalRepository extends PagingAndSortingRepository<Proposal,
     Page<Proposal> findByProjectId(UUID projectId, Pageable pageable);
 
     Page<Proposal> findBySubContractorId(UUID contractorId, Pageable pageable);
+
+    Page<Proposal> findBySubContractorIdAndStatus(UUID contractorId, Proposal.STATUS status, Pageable pageable);
     
     Page<Proposal> findByProjectIdAndStatus(UUID projectId, Proposal.STATUS status, Pageable pageable);
 }
