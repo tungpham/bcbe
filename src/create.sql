@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS project_template;
 DROP TABLE IF EXISTS project_specialty;
 DROP TABLE IF EXISTS contractor_specialty;
 DROP TABLE IF EXISTS proposal_option;
+DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
 DROP TABLE IF EXISTS contractor;
@@ -168,6 +169,17 @@ create table proposal_option (
     value varchar(1000),
     budget numeric(10, 2),
     duration numeric(10,2),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+create table message (
+    id uuid primary key,  
+    prop_id uuid references proposal,
+    from_id uuid references contractor,
+    to_id uuid references contractor,
+    content varchar(500),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
