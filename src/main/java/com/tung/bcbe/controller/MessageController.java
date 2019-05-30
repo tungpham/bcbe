@@ -74,7 +74,7 @@ public class MessageController {
      */
     @GetMapping("/proposals/{prop_id}")
     public Page<Message> getMsgForProposal(@PathVariable(name = "prop_id") UUID propId, Pageable pagable) {
-        return messageRepository.findByProposalId(propId, pagable);   
+        return messageRepository.findByProposalIdOrderByCreatedAtDesc(propId, pagable);   
     }
 
     /**

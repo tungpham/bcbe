@@ -8,5 +8,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.UUID;
 
 public interface MessageRepository extends PagingAndSortingRepository<Message, UUID> {
-    Page<Message> findByProposalId(UUID propId, Pageable pageable);
+    Page<Message> findByProposalIdOrderByCreatedAtDesc(UUID propId, Pageable pageable);
 }
