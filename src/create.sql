@@ -180,8 +180,17 @@ create table message (
     from_id uuid references contractor,
     to_id uuid references contractor,
     content varchar(500),
+    status varchar(10),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
 );
 
+CREATE TABLE proposalmsgfile (
+    id uuid primary key,
+    name varchar(100),
+    msg_id uuid references message,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);

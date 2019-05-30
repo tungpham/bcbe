@@ -10,10 +10,13 @@ import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
 @AllArgsConstructor
@@ -24,9 +27,17 @@ import javax.validation.constraints.NotNull;
 @Table(name = "message")
 public class Message extends ID {
 
+    public enum Status {
+        READ,
+        UNREAD
+    }
+    
     @Column
     @NotNull
     private String content;
+    
+    @Column
+    private Status status;
     
     @ManyToOne
     @JoinColumn(name = "prop_id", referencedColumnName = "id")
@@ -40,4 +51,7 @@ public class Message extends ID {
     @ManyToOne
     @JoinColumn(name = "to_id", referencedColumnName = "id")
     private Contractor to;
+    
+    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
+    private Set<ProposalMessageFile> proposalMessageFiles;
 }
