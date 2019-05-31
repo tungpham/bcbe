@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -102,6 +103,13 @@ public class MessageController {
         });
     }
 
+    @GetMapping("/{msg_id}/files/{file_name}")
+    public ResponseEntity<byte[]> download(@PathVariable(value = "msg_id") UUID msgId,
+                                           @PathVariable(value = "file_name") String fileName) throws IOException {
+        String key = msgId + "/" + fileName;
+        return Util.download(s3, bucket, key);
+    }
+    
     @PostMapping("/{msg_id}/files/upload")
     public void uploadFile(@PathVariable(value = "msg_id") UUID msgId,
                            @RequestParam("file") MultipartFile file) {
