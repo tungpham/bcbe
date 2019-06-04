@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS projectfile;
 DROP TABLE IF EXISTS contractorfile;
 DROP TABLE IF EXISTS project_template;
 DROP TABLE IF EXISTS project_specialty;
+DROP TABLE IF EXISTS project_invite;
 DROP TABLE IF EXISTS contractor_specialty;
 DROP TABLE IF EXISTS proposal_option;
 DROP TABLE IF EXISTS message;
@@ -93,6 +94,7 @@ CREATE TABLE template (
     id uuid primary key ,
     description varchar(100),
     name varchar(100),
+    unique(name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -105,6 +107,7 @@ CREATE TABLE category (
     type varchar(100),
     value varchar(100),
     tem_id uuid references template not null,
+    unique(name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -118,6 +121,7 @@ CREATE TABLE option (
     budget numeric(10, 2),
     duration numeric(10,2),
     cat_id uuid references category not null,
+    unique(name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -127,6 +131,7 @@ CREATE TABLE project_template (
     id uuid primary key,
     proj_id uuid references project,
     tem_id uuid references template,
+    unique(proj_id, tem_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -137,6 +142,7 @@ CREATE TABLE specialty (
     name varchar(50),
     description varchar(200),
     value varchar(50),
+    unique(name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -146,6 +152,7 @@ CREATE TABLE project_specialty (
     id uuid primary key,
     proj_id uuid references project,
     spec_id uuid references specialty,
+    unique(proj_id, spec_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -155,6 +162,7 @@ CREATE TABLE contractor_specialty (
     id uuid primary key,
     con_id uuid references contractor,
     spec_id uuid references specialty,
+    unique(con_id, spec_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -169,6 +177,17 @@ create table proposal_option (
     value varchar(1000),
     budget numeric(10, 2),
     duration numeric(10,2),
+    unique(name),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE project_invite (
+    id uuid primary key,
+    proj_id uuid references project,
+    sub_id uuid references contractor,
+    unique(proj_id, sub_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

@@ -4,12 +4,15 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
+import com.tung.bcbe.model.ProjectInvite;
 import com.tung.bcbe.model.ProjectSpecialty;
 import com.tung.bcbe.model.ProjectTemplate;
+import com.tung.bcbe.model.Proposal;
 import com.tung.bcbe.model.Specialty;
 import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ProjectFileRepository;
+import com.tung.bcbe.repository.ProjectInviteRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProjectSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
@@ -19,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -38,6 +42,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -64,6 +69,9 @@ public class ProjectController {
     
     @Autowired
     private ProjectSpecialtyRepository projectSpecialtyRepository;
+
+    @Autowired
+    private ProjectInviteRepository projectInviteRepository;
     
     @Autowired
     private AmazonS3 s3;
@@ -212,5 +220,35 @@ public class ProjectController {
     public void removeSpecialtyFromProject(@PathVariable(value = "project_id") UUID projectId,
                                               @PathVariable(value = "spec_id") UUID specId) {
         projectSpecialtyRepository.deleteProjectSpecialtiesByProjectIdAndSpecialtyId(projectId, specId);
+    }
+
+    @PostMapping("/projects/{project_id}/invite/{sub_id}")
+    public ProjectInvite inviteSubContractor(@PathVariable(value = "project_id") UUID propId,
+                                             @PathVariable(value = "sub_id") UUID subId) {
+        return projectRepository.findById(propId).map(project ->
+                contractorRepository.findById(subId).map(contractor -> {
+                    ProjectInvite projectInvite = new ProjectInvite();
+                    projectInvite.setProject(project);
+                    projectInvite.setSubContractor(contractor);
+                    return projectInviteRepository.save(projectInvite);
+                }).orElseThrow(Util.notFound(subId, Contractor.class))).orElseThrow(Util.notFound(propId, Proposal.class));
+    }
+
+    @DeleteMapping("/projects/invites/{invite_id}")
+    public void deleteInvite(@PathVariable(value = "invite_id") UUID inviteId) {
+        projectInviteRepository.deleteById(inviteId);
+    }
+
+    @GetMapping("/projects/invites/{sub_id}")
+    public Page<Project> findProjectInviteForSubContractor(@PathVariable(value = "sub_id") UUID subId, Pageable pageable) {
+        Page<ProjectInvite> page = projectInviteRepository.findBySubContractorId(subId, pageable);
+        List<Project> content = page.stream().map(ProjectInvite::getProject).collect(Collectors.toList());
+        PageImpl<Project> projects = new PageImpl<Project>(content, pageable, page.getTotalElements());
+        return projects;
+    }
+    
+    @GetMapping("/projects/{project_id}/invites")
+    public List<Contractor> findInviteSubContractorByProject(@PathVariable(value = "project_id") UUID projectId) {
+        return projectInviteRepository.findByProjectId(projectId).stream().map(ProjectInvite::getSubContractor).collect(Collectors.toList());
     }
 }

@@ -49,4 +49,7 @@ public class Project extends ID {
     
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private Set<ProjectSpecialty> projectSpecialties;
+    
+    @OneToMany(mappedBy = "project")
+    private Set<ProjectInvite> projectInvites;
 }

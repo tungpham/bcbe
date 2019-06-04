@@ -1,6 +1,7 @@
 package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.tung.bcbe.dto.ContractorSearchFilter;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.ContractorFile;
@@ -11,6 +12,7 @@ import com.tung.bcbe.repository.ContractorSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.SpecialtyRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -27,9 +29,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,6 +67,9 @@ public class ContractorController {
 
     @Value("${S3_BUCKET_CON}")
     private String bucket;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
     
     @PostMapping
     public Contractor create(@Valid @RequestBody Contractor contractor) {
@@ -163,5 +177,45 @@ public class ContractorController {
     public void removeSpecialtyFromContractor(@PathVariable(name = "con_id") UUID conId,
                                               @PathVariable(name = "spec_id") UUID specId) {
         contractorSpecialtyRepository.deleteContractorSpecialtiesByContractorIdAndSpecialtyId(conId, specId);
+    }
+    
+    @GetMapping("/search")
+    public List<Contractor> find(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Contractor> query = cb.createQuery(Contractor.class);
+        Root<Contractor> contractor = query.from(Contractor.class);
+        
+        Join addressJoin = contractor.join("address");
+        
+        Predicate predicate = cb.conjunction();
+        
+        if (StringUtils.isNotBlank(filter.getName())) {
+            Path<String> name = addressJoin.get("name");
+            predicate = cb.like(name, filter.getName());
+        }
+        
+        if (StringUtils.isNotBlank(filter.getCity())) {
+            Path<String> city = addressJoin.get("city");
+            predicate = cb.and(predicate, cb.like(city, like(filter.getCity())));
+        }
+        
+        if (filter.getSpecialty() != null) {
+            Join contractorSpecialty = contractor.join("contractorSpecialties");
+            Join specialty = contractorSpecialty.join("specialty");
+            Path<String> specialtyName = specialty.get("name");
+            CriteriaBuilder.In<String> inClause = cb.in(specialtyName);
+            for (String s : filter.getSpecialty()) {
+                inClause.value(s);
+            }
+            predicate = cb.and(predicate, inClause);
+        }
+        
+        query.select(contractor).where(predicate);
+        
+        return entityManager.createQuery(query).getResultList();
+    }
+    
+    public String like(String s) {
+        return "%"+s+"%";
     }
 }
