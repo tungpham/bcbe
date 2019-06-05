@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.PersistenceConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -51,9 +52,9 @@ public class Proposal extends ID {
     @JoinColumn(name = "sub_id", referencedColumnName = "id")
     private Contractor subContractor;
     
-    @OneToMany(mappedBy = "proposal")
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProposalOption> proposalOptions;
     
-    @OneToMany(mappedBy = "proposal", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "proposal", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProposalFile> proposalFiles;
 }
