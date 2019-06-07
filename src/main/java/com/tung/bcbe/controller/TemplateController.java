@@ -67,9 +67,14 @@ public class TemplateController {
     
     @PutMapping("/{tem_id}")
     public Template edit(@PathVariable(name = "tem_id") UUID temId, @RequestBody @Valid Template template) {
-        return templateRepository.findById(temId).map(current -> {
-            template.setId(current.getId());
-            return templateRepository.save(template);
+        return templateRepository.findById(temId).map(tem -> {
+            if (template.getName() != null) {
+                tem.setName(template.getName());
+            }
+            if (template.getDescription() != null) {
+                tem.setDescription(template.getDescription());
+            }
+            return templateRepository.save(tem);
         }).orElseThrow(Util.notFound(temId, Template.class));
     }
 }
