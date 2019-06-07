@@ -169,6 +169,25 @@ public class ProposalController {
                                                   @PathVariable(value = "cat_id") UUID catId, Pageable pageable) {
         return proposalOptionRepository.findByProposalIdAndCategoryId(propId, catId, pageable);
     }
+    
+    @GetMapping("/proposals/options/{opt_id}")
+    public ProposalOption getProposalOption(@PathVariable(value = "opt_id") UUID optId) {
+        return proposalOptionRepository.findById(optId).orElseThrow(Util.notFound(optId, ProposalOption.class));
+    }
+    
+    @PutMapping("/proposals/options/{opt_id}")
+    public ProposalOption editProposalOption(@PathVariable(value = "opt_id") UUID optId,
+                                   @RequestBody @Valid ProposalOption proposalOption) {
+        return proposalOptionRepository.findById(optId).map(current -> {
+           proposalOption.setId(current.getId());
+            return proposalOptionRepository.save(proposalOption);
+        }).orElseThrow(Util.notFound(optId, ProposalOption.class));
+    }
+
+    @DeleteMapping("/proposals/options/{opt_id}")
+    public void deleteProposalOption(@PathVariable(value = "opt_id") UUID optId) {
+        proposalOptionRepository.deleteById(optId);
+    }
 
     @PostMapping("/proposals/{proposal_id}/files/upload")
     public void uploadFile(@PathVariable(value = "proposal_id") UUID proposalId,
