@@ -142,6 +142,9 @@ public class ProposalController {
             if (proposal.getStatus() != null) {
                 current.setStatus(proposal.getStatus());
             }
+            if (proposal.getBudget() != null) {
+                current.setBudget(proposal.getBudget());
+            }
             return proposalRepository.save(current);
         }).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
