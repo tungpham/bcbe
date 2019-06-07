@@ -49,12 +49,9 @@ public class CategoryController {
     
     @PutMapping("/{cat_id}")
     public Category edit(@PathVariable(name = "cat_id") UUID catId, @RequestBody Category category) {
-        return categoryRepository.findById(catId).map(cat -> {
-            if (category.getName() != null) cat.setName(category.getName());
-            if (category.getDescription() != null) cat.setDescription(category.getDescription());
-            if (category.getType() != null) cat.setType(category.getType());
-            if (category.getValue() != null) cat.setValue(category.getValue());
-            return categoryRepository.save(cat);
+        return categoryRepository.findById(catId).map(current -> {
+            category.setId(current.getId());
+            return categoryRepository.save(category);
         }).orElseThrow(Util.notFound(catId, Category.class));
     }
 }

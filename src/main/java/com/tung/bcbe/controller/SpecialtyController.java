@@ -44,17 +44,9 @@ public class SpecialtyController {
     @PutMapping("/{spec_id}")
     public Specialty edit(@PathVariable(name = "spec_id") UUID specId, 
                           @RequestBody @Valid Specialty specialty) {
-        return specialtyRepository.findById(specId).map(spec -> {
-            if (specialty.getName() != null) {
-                spec.setName(specialty.getName());
-            }
-            if (specialty.getDescription() != null) {
-                spec.setDescription(specialty.getDescription());
-            }
-            if (specialty.getValue() != null) {
-                spec.setValue(specialty.getValue());
-            }
-            return specialtyRepository.save(spec);
+        return specialtyRepository.findById(specId).map(current -> {
+            specialty.setId(current.getId());
+            return specialtyRepository.save(specialty);
         }).orElseThrow(Util.notFound(specId, Specialty.class));
     }
     

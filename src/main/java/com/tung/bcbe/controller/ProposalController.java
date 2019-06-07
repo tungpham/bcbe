@@ -133,16 +133,8 @@ public class ProposalController {
     public Proposal editProposal(@PathVariable(value = "proposal_id") UUID proposalId, 
                                  @RequestBody @Valid Proposal proposal) {
         return proposalRepository.findById(proposalId).map(current -> {
-            if (proposal.getDescription() != null) {
-                current.setDescription(proposal.getDescription());
-            }
-            if (proposal.getBudget() != null) {
-                current.setBudget(proposal.getBudget());
-            }
-            if (proposal.getStatus() != null) {
-                current.setStatus(proposal.getStatus());
-            }
-            return proposalRepository.save(current);
+            proposal.setId(current.getId());
+            return proposalRepository.save(proposal);
         }).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
     

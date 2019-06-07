@@ -106,17 +106,9 @@ public class ProjectController {
     @PutMapping("/projects/{project_id}")
     public Project editProjectById(@PathVariable(value = "project_id") UUID projectId, 
                                             @RequestBody @Valid Project project) {
-        return projectRepository.findById(projectId).map(prj -> {
-            if (project.getTitle() != null) {
-                prj.setTitle(project.getTitle());
-            }
-            if (project.getDescription() != null) {
-                prj.setDescription(project.getDescription());
-            }
-            if (project.getBudget() != null) {
-                prj.setBudget(project.getBudget());
-            }
-            return projectRepository.save(prj);
+        return projectRepository.findById(projectId).map(current -> {
+            project.setId(current.getId());
+            return projectRepository.save(project);
         }).orElseThrow(Util.notFound(projectId, Project.class));
     }
 
