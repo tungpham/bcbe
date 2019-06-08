@@ -11,6 +11,7 @@ import com.tung.bcbe.model.ProposalOption;
 import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.CategoryRepository;
 import com.tung.bcbe.repository.ContractorRepository;
+import com.tung.bcbe.repository.MessageRepository;
 import com.tung.bcbe.repository.OptionRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
@@ -71,6 +72,9 @@ public class ProposalController {
     
     @Autowired
     private ProjectTemplateRepository projectTemplateRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
     
     @Autowired
     private ProposalFileRepository proposalFileRepository;
@@ -149,8 +153,10 @@ public class ProposalController {
         }).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
     
+    @Transactional
     @DeleteMapping("/proposals/{proposal_id}")
     public void deleteProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
+        messageRepository.deleteByProposalId(proposalId);
         proposalRepository.deleteById(proposalId);
     }
     

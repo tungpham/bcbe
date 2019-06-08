@@ -76,6 +76,7 @@ CREATE TABLE proposal (
     duration numeric(10,2), 
     project_id uuid references project,
     sub_id uuid references contractor,
+    unique(project_id, sub_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

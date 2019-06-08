@@ -9,4 +9,5 @@ import java.util.UUID;
 
 public interface MessageRepository extends PagingAndSortingRepository<Message, UUID> {
     Page<Message> findByProposalIdOrderByCreatedAtDesc(UUID propId, Pageable pageable);
+    void deleteByProposalId(UUID propId);
 }

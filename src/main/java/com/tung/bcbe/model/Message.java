@@ -52,6 +52,6 @@ public class Message extends ID {
     @JoinColumn(name = "to_id", referencedColumnName = "id")
     private Contractor to;
     
-    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ProposalMessageFile> proposalMessageFiles;
 }
