@@ -10,6 +10,8 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -26,6 +28,11 @@ import java.util.Set;
 @Table(name = "project")
 public class Project extends ID {
 
+    public enum Status {
+        ACTIVE,
+        ARCHIVED
+    }
+    
     @Column
     private String title;
 
@@ -34,9 +41,9 @@ public class Project extends ID {
 
     @Column
     private Double budget;
-    
-    @Column
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
     
     @ManyToOne
     @JoinColumn(name = "gen_id", referencedColumnName = "id", nullable = false)
