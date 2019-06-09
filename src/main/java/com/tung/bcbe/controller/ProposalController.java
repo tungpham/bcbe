@@ -188,8 +188,22 @@ public class ProposalController {
     public ProposalOption editProposalOption(@PathVariable(value = "opt_id") UUID optId,
                                    @RequestBody @Valid ProposalOption proposalOption) {
         return proposalOptionRepository.findById(optId).map(current -> {
-           proposalOption.setId(current.getId());
-            return proposalOptionRepository.save(proposalOption);
+            if (proposalOption.getBudget() != null) {
+                current.setBudget(proposalOption.getBudget());
+            }
+            if (proposalOption.getDuration() != null) {
+                current.setDuration(proposalOption.getDuration());
+            }
+            if (proposalOption.getDescription() != null) {
+                current.setDescription(proposalOption.getDescription());
+            }
+            if (proposalOption.getName() != null) {
+                current.setName(proposalOption.getName());
+            }
+            if (proposalOption.getValue() != null) {
+                current.setValue(proposalOption.getValue());
+            }
+            return proposalOptionRepository.save(current);
         }).orElseThrow(Util.notFound(optId, ProposalOption.class));
     }
 

@@ -104,7 +104,7 @@ public class ProjectController {
 
     @GetMapping("/projects")
     public Page<Project> getAllProjects(Pageable pageable) {
-        return projectRepository.findAll(pageable);
+        return projectRepository.findAllByStatus(Project.Status.ACTIVE, pageable);
     }
     
     @PutMapping("/projects/{project_id}")
@@ -122,6 +122,14 @@ public class ProjectController {
             }
             return projectRepository.save(prj);
         }).orElseThrow(Util.notFound(projectId, Project.class));
+    }
+
+    @PutMapping("/projects/{project_id}/archive")
+    public void editProjectByIdArchive(@PathVariable(value = "project_id") UUID projectId) {
+        projectRepository.findById(projectId).ifPresent(project -> {
+            project.setStatus(Project.Status.ARCHIVED);
+            projectRepository.save(project);
+        });
     }
 
     @DeleteMapping("/projects/{project_id}")
