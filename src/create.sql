@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS project_specialty;
 DROP TABLE IF EXISTS project_invite;
 DROP TABLE IF EXISTS contractor_specialty;
 DROP TABLE IF EXISTS proposal_option;
+DROP TABLE IF EXISTS subproject;
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
@@ -210,6 +211,15 @@ CREATE TABLE proposalmsgfile (
     id uuid primary key,
     name varchar(100),
     msg_id uuid references message,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE subproject(
+    id uuid primary key,  
+    parent_id uuid references project,
+    child_id uuid references project,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

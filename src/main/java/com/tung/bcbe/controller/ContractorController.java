@@ -180,7 +180,7 @@ public class ContractorController {
     }
     
     @GetMapping("/search")
-    public List<Contractor> find(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
+    public List<Contractor> search(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Contractor> query = cb.createQuery(Contractor.class);
         Root<Contractor> contractor = query.from(Contractor.class);
@@ -191,7 +191,7 @@ public class ContractorController {
         
         if (StringUtils.isNotBlank(filter.getName())) {
             Path<String> name = addressJoin.get("name");
-            predicate = cb.like(name, filter.getName());
+            predicate = cb.like(name, like(filter.getName()));
         }
         
         if (StringUtils.isNotBlank(filter.getCity())) {
