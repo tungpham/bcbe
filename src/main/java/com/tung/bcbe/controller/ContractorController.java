@@ -179,7 +179,7 @@ public class ContractorController {
         contractorSpecialtyRepository.deleteContractorSpecialtiesByContractorIdAndSpecialtyId(conId, specId);
     }
     
-    @GetMapping("/search")
+    @PostMapping("/search")
     public List<Contractor> search(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Contractor> query = cb.createQuery(Contractor.class);
