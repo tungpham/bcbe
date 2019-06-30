@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -80,6 +82,20 @@ public class ContractorController {
     public Contractor create(@Valid @RequestBody Contractor contractor) {
         contractor.setStatus(Contractor.STATUS.PENDING);
         return contractorRepository.save(contractor);
+    }
+
+    /**
+     * Special endpoint to delete test account only
+     * @param email
+     */
+    @Transactional
+    @DeleteMapping("/{email}")
+    public void delete(@PathVariable(name = "email") String email) {
+        if (email.equals("test_gen@test.com") || email.equals("test_sub@test.com")) {
+            contractorRepository.deleteContractorByEmail(email);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
     
     @GetMapping("/{con_id}")

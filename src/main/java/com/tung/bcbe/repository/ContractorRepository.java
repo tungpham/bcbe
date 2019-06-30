@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface ContractorRepository extends PagingAndSortingRepository<Contractor, UUID> {
     Page<Contractor> findAllBy(Pageable pageable);
     Page<Contractor> findByAddressNameContains(String name, Pageable pageable);
+    Contractor findContractorByEmail(String email);
+    void deleteContractorByEmail(String email);
 }

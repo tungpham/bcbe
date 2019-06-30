@@ -3,10 +3,11 @@ DROP TABLE IF EXISTS contractorfile;
 DROP TABLE IF EXISTS project_template;
 DROP TABLE IF EXISTS project_specialty;
 DROP TABLE IF EXISTS project_invite;
+DROP TABLE IF EXISTS project_relationship;
 DROP TABLE IF EXISTS contractor_specialty;
 DROP TABLE IF EXISTS proposal_option;
-DROP TABLE IF EXISTS project_relationship;
-DROP TABLE IF EXISTS subproject;
+DROP TABLE IF EXISTS proposalfile;
+DROP TABLE IF EXISTS proposalmsgfile;
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS project;
@@ -35,6 +36,7 @@ CREATE TABLE contractor
     status varchar(10),
     status_reason varchar(300),
     address_id uuid references address,
+    unique(email),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50),
@@ -45,6 +47,7 @@ CREATE TABLE contractorfile (
     id uuid primary key,
     name varchar(100),
     con_id uuid references contractor,
+    unique(con_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -57,6 +60,7 @@ CREATE TABLE project (
     budget numeric(10,2),
     status varchar(10),
     gen_id uuid references contractor,
+    unique(title),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -66,6 +70,7 @@ CREATE TABLE projectfile (
     id uuid primary key,
     name varchar(100),
     proj_id uuid references project,
+    unique(proj_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -89,6 +94,7 @@ CREATE TABLE proposalfile (
     id uuid primary key,
     name varchar(100),
     prop_id uuid references proposal,
+    unique(prop_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -222,6 +228,7 @@ CREATE TABLE project_relationship(
     id uuid primary key,  
     parent_id uuid references project,
     child_id uuid references project,
+    unique(parent_id, child_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
