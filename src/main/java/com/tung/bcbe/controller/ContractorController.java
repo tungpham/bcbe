@@ -7,6 +7,7 @@ import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.ContractorFile;
 import com.tung.bcbe.model.ContractorSpecialty;
 import com.tung.bcbe.model.Specialty;
+import com.tung.bcbe.repository.ContractorFileRepository;
 import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ContractorSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectRepository;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -61,6 +63,9 @@ public class ContractorController {
     
     @Autowired
     private ContractorSpecialtyRepository contractorSpecialtyRepository;
+    
+    @Autowired
+    private ContractorFileRepository contractorFileRepository;
     
     @Autowired
     private AmazonS3 s3;
@@ -130,14 +135,13 @@ public class ContractorController {
             ContractorFile contractorFile = new ContractorFile();
             contractorFile.setContractor(contractor);
             contractorFile.setName(file.getOriginalFilename());
-            contractor.getContractorFiles().add(contractorFile);
             String key = contractor.getId() + "/" + file.getOriginalFilename();
             try {
                 Util.putFile(s3, bucket, key, file);
             } catch (IOException e) {
                 throw new RuntimeException("Cannot upload " + bucket + "/" + key, e);
             }
-            return contractorRepository.save(contractor);
+            return contractorFileRepository.save(contractorFile);
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
     
@@ -153,8 +157,10 @@ public class ContractorController {
                            @PathVariable(name = "filename") String filename) {
         contractorRepository.findById(conId).map(contractor -> {
             s3.deleteObject(bucket, contractor.getId() + "/" + filename);
-            contractor.getContractorFiles().removeIf(contractorFile -> contractorFile.getName().equals(filename));
-            return contractorRepository.save(contractor);
+            List<ContractorFile> files = contractor.getContractorFiles().stream().filter(file -> file.getName().equals(filename))
+                    .collect(Collectors.toList());
+            files.forEach(f -> contractorFileRepository.deleteById(f.getId()));
+            return contractor;
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
     

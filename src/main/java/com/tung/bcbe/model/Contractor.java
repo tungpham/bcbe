@@ -47,10 +47,10 @@ public class Contractor extends ID {
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
     
-    @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ContractorFile> contractorFiles;
     
-    @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ContractorSpecialty> contractorSpecialties;
 }
 

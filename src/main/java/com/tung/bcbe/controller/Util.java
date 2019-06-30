@@ -5,11 +5,12 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.common.io.ByteStreams;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,10 +21,10 @@ import java.util.function.Supplier;
 @Slf4j
 public class Util {
 
-    static Supplier<ResourceNotFoundException> notFound(UUID msg, Class entity) {
+    static Supplier<ResponseStatusException> notFound(UUID msg, Class entity) {
         return () ->  {
             log.error(entity + " " + msg + " not found");
-            return new ResourceNotFoundException(msg + " not found");
+            return new ResponseStatusException(HttpStatus.NOT_FOUND, msg + " not found");
         };
     }
     

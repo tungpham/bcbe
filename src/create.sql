@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS project_specialty;
 DROP TABLE IF EXISTS project_invite;
 DROP TABLE IF EXISTS contractor_specialty;
 DROP TABLE IF EXISTS proposal_option;
+DROP TABLE IF EXISTS project_relationship;
 DROP TABLE IF EXISTS subproject;
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS proposal;
@@ -36,7 +37,8 @@ CREATE TABLE contractor
     address_id uuid references address,
     created_at timestamp not null,
     updated_at timestamp not null,
-    updated_by varchar(50)
+    updated_by varchar(50),
+    unique(email)
 );
 
 CREATE TABLE contractorfile (
@@ -216,7 +218,7 @@ CREATE TABLE proposalmsgfile (
     updated_by varchar(50)
 );
 
-CREATE TABLE subproject(
+CREATE TABLE project_relationship(
     id uuid primary key,  
     parent_id uuid references project,
     child_id uuid references project,

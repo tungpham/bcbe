@@ -5,6 +5,7 @@ import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
 import com.tung.bcbe.model.ProjectInvite;
+import com.tung.bcbe.model.ProjectRelationship;
 import com.tung.bcbe.model.ProjectSpecialty;
 import com.tung.bcbe.model.ProjectTemplate;
 import com.tung.bcbe.model.Proposal;
@@ -13,6 +14,7 @@ import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ProjectFileRepository;
 import com.tung.bcbe.repository.ProjectInviteRepository;
+import com.tung.bcbe.repository.ProjectRelationshipRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProjectSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
@@ -74,6 +76,9 @@ public class ProjectController {
     private ProjectInviteRepository projectInviteRepository;
     
     @Autowired
+    private ProjectRelationshipRepository projectRelationshipRepository;
+    
+    @Autowired
     private AmazonS3 s3;
     
     @Value("${S3_BUCKET}")
@@ -89,6 +94,20 @@ public class ProjectController {
         }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
 
+    @PostMapping("/contractors/{gen_id}/projects/{proj_id}/child")
+    public Project createSubProject(@PathVariable(value = "gen_id") UUID genId,
+                                    @PathVariable(value = "proj_id") UUID projId,
+                                    @Valid @RequestBody Project project) {
+        Project subProject = createProject(genId, project);
+        projectRepository.findById(projId).map(parent -> {
+            ProjectRelationship relationship = new ProjectRelationship();
+            relationship.setParent(parent);
+            relationship.setChild(subProject);
+            return projectRelationshipRepository.save(relationship);
+        }).orElseThrow(Util.notFound(projId, Project.class));
+        return subProject;
+    }
+    
     @GetMapping("/contractors/{gen_id}/projects")
     public Page<Project> getProjectsByGenContractor(
             @PathVariable(value = "gen_id") UUID genId,
