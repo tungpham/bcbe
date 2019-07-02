@@ -17,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Date;
 import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
@@ -44,6 +45,9 @@ public class Project extends ID {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+    
+    @Column
+    private Date due;
     
     @ManyToOne
     @JoinColumn(name = "gen_id", referencedColumnName = "id", nullable = false)
