@@ -21,6 +21,7 @@ import com.tung.bcbe.repository.ProjectTemplateRepository;
 import com.tung.bcbe.repository.SpecialtyRepository;
 import com.tung.bcbe.repository.TemplateRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -139,12 +140,15 @@ public class ProjectController {
             if (project.getBudget() != null) {
                 prj.setBudget(project.getBudget());
             }
+            if (!DateUtils.isSameDay(project.getDue(), prj.getDue())) {
+                prj.setDue(project.getDue());
+            }
             return projectRepository.save(prj);
         }).orElseThrow(Util.notFound(projectId, Project.class));
     }
 
     @PutMapping("/projects/{project_id}/archive")
-    public void editProjectByIdArchive(@PathVariable(value = "project_id") UUID projectId) {
+    public void archiveProjectById(@PathVariable(value = "project_id") UUID projectId) {
         projectRepository.findById(projectId).ifPresent(project -> {
             project.setStatus(Project.Status.ARCHIVED);
             projectRepository.save(project);
