@@ -17,6 +17,8 @@ DROP TABLE IF EXISTS option;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS template;
 DROP TABLE IF EXISTS specialty;
+DROP TABLE IF EXISTS room;
+DROP TABLE IF EXISTS level;
 
 CREATE TABLE address (
     id uuid primary key,
@@ -118,7 +120,7 @@ CREATE TABLE category (
     type varchar(100),
     value varchar(100),
     tem_id uuid references template not null,
-    unique(name),
+    unique(tem_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -132,7 +134,7 @@ CREATE TABLE option (
     budget numeric(10, 2),
     duration numeric(10,2),
     cat_id uuid references category not null,
-    unique(name),
+    unique(cat_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -230,6 +232,33 @@ CREATE TABLE project_relationship(
     parent_id uuid references project,
     child_id uuid references project,
     unique(parent_id, child_id),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE level (
+    id uuid primary key,
+    proj_id uuid references project,
+    number int,
+    name varchar(100),
+    unique (proj_id, number),
+    unique (proj_id, name),
+    description varchar(1000),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE room (
+    id uuid primary key,
+    lvl_id uuid references level,
+    number int,
+    type varchar(20),
+    name varchar(100),
+    description varchar(1000),
+    unique (lvl_id, number),
+    unique (lvl_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
