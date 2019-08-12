@@ -37,6 +37,9 @@ public class ProposalOption extends ID {
 
     @Column
     private Double duration;
+
+    @Column
+    private String type;
     
     @ManyToOne
     @JoinColumn(name = "prop_id", referencedColumnName = "id")

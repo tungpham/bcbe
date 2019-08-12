@@ -27,6 +27,9 @@ public class Option extends ID {
     private String name;
 
     @Column
+    private String type;
+    
+    @Column
     private String description;
 
     @Column

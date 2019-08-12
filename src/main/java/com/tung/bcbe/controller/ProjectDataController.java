@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -55,17 +56,23 @@ public class ProjectDataController {
         ).orElseThrow(Util.notFound(prj_id, Project.class));
     }
     
-    @GetMapping("/projects/levels/{lvl_id}")
-    public Level getLevel(@PathVariable(value = "lvl_id") UUID lvl_id) {
-        return levelRepository.findById(lvl_id).orElseThrow(Util.notFound(lvl_id, Level.class));
+    @GetMapping("/levels/{lvl_id}")
+    public Level getLevel(@PathVariable(value = "lvl_id") UUID lvl_id, 
+                          @RequestParam(required = false, defaultValue = "false") String full) {
+        Level level = levelRepository.findById(lvl_id).orElseThrow(Util.notFound(lvl_id, Level.class));
+        if (full.equals("true")) {
+            List<Room> rooms = roomRepository.findByLevelId(lvl_id);
+            level.setRooms(rooms);
+        }
+        return level;
     }
 
-    @DeleteMapping("/projects/levels/{lvl_id}")
+    @DeleteMapping("/levels/{lvl_id}")
     public void deleteLevel(@PathVariable(value = "lvl_id") UUID lvl_id) {
         levelRepository.deleteById(lvl_id);
     }
     
-    @PutMapping("/projects/levels/{lvl_id}")
+    @PutMapping("/levels/{lvl_id}")
     public Level updateLevel(@PathVariable(value = "lvl_id") UUID lvl_id, @RequestBody @Valid Level update) {
         return levelRepository.findById(lvl_id).map(current -> {
             if (update.getDescription() != null && StringUtils.compare(current.getDescription(), update.getDescription()) != 0) {

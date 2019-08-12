@@ -25,7 +25,7 @@ import java.util.List;
 @Table(name = "level")
 public class Level extends ID {
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proj_id", referencedColumnName = "id")
     @JsonIgnore
     private Project project;

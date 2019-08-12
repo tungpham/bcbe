@@ -48,4 +48,13 @@ public class Room extends ID {
     
     @Column
     private String description;
+    
+    @Column
+    private int w;
+
+    @Column
+    private int l;
+
+    @Column
+    private int h;
 }
