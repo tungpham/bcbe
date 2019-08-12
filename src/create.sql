@@ -10,6 +10,8 @@ DROP TABLE IF EXISTS proposalfile;
 DROP TABLE IF EXISTS proposalmsgfile;
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS proposal;
+DROP TABLE IF EXISTS room;
+DROP TABLE IF EXISTS level;
 DROP TABLE IF EXISTS project;
 DROP TABLE IF EXISTS contractor;
 DROP TABLE IF EXISTS address;
@@ -17,8 +19,8 @@ DROP TABLE IF EXISTS option;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS template;
 DROP TABLE IF EXISTS specialty;
-DROP TABLE IF EXISTS room;
-DROP TABLE IF EXISTS level;
+DROP TABLE IF EXISTS room_option;
+
 
 CREATE TABLE address (
     id uuid primary key,
@@ -129,6 +131,7 @@ CREATE TABLE category (
 CREATE TABLE option (
     id uuid primary key,
     name varchar(100),
+    type varchar(100),
     description varchar(200),
     value varchar(1000),
     budget numeric(10, 2),
@@ -257,9 +260,25 @@ CREATE TABLE room (
     type varchar(20),
     name varchar(100),
     description varchar(1000),
+    w int,
+    l int,
+    h int,
     unique (lvl_id, number),
     unique (lvl_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
 );
+
+CREATE TABLE room_option (
+    id uuid primary key,
+    type varchar(100),
+    name varchar(100),
+    value varchar(100),
+    room_id uuid references room,
+    tem_id uuid references template,
+    cat_id uuid references category,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+)
