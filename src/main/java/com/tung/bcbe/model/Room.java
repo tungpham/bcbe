@@ -28,6 +28,7 @@ public class Room extends ID {
         BATHROOM,
         BEDROOM,
         HALLWAY,
+        STAIRS,
         OTHER
     };
     
