@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS template;
 DROP TABLE IF EXISTS specialty;
 DROP TABLE IF EXISTS room_option;
-
+DROP TABLE IF EXISTS node;
 
 CREATE TABLE address (
     id uuid primary key,
@@ -64,7 +64,7 @@ CREATE TABLE project (
     budget numeric(10,2),
     status varchar(10),
     due date,
-    gen_id uuid references contractor,  
+    gen_id uuid references contractor,
     unique(title),
     created_at timestamp not null,
     updated_at timestamp not null,
@@ -86,7 +86,7 @@ CREATE TABLE proposal (
     description varchar(100),
     budget numeric(10,2),
     status varchar(10),
-    duration numeric(10,2), 
+    duration numeric(10,2),
     project_id uuid references project,
     sub_id uuid references contractor,
     unique(project_id, sub_id),
@@ -185,7 +185,7 @@ CREATE TABLE contractor_specialty (
 );
 
 create table proposal_option (
-    id uuid primary key,  
+    id uuid primary key,
     prop_id uuid references proposal,
     cat_id uuid references category,
     name varchar(100),
@@ -210,7 +210,7 @@ CREATE TABLE project_invite (
 );
 
 create table message (
-    id uuid primary key,  
+    id uuid primary key,
     prop_id uuid references proposal,
     from_id uuid references contractor,
     to_id uuid references contractor,
@@ -230,8 +230,8 @@ CREATE TABLE proposalmsgfile (
     updated_by varchar(50)
 );
 
-CREATE TABLE project_relationship(
-    id uuid primary key,  
+CREATE TABLE project_relationship (
+    id uuid primary key,
     parent_id uuid references project,
     child_id uuid references project,
     unique(parent_id, child_id),
@@ -281,4 +281,17 @@ CREATE TABLE room_option (
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
+);
+
+CREATE TABLE node (
+    id uuid primary key,
+    parent_id uuid references node,
+    type varchar(100),
+    name varchar(100),
+    value varchar(100),
+    description varchar(1000),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50),
+    unique (parent_id, name)
 )
