@@ -23,33 +23,35 @@ import javax.persistence.Table;
 @Entity(name = "room")
 @Table(name = "room")
 public class Room extends ID {
-    
+
     public enum TYPE {
         LIVINGROOM,
         BATHROOM,
         BEDROOM,
         HALLWAY,
         STAIRS,
+        KITCHEN,
+        ROOFTOP,
         OTHER
     };
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lvl_id", referencedColumnName = "id")
     @JsonIgnore
     private Level level;
-    
+
     @Column(updatable = false)
     private int number;
-    
+
     @Enumerated(EnumType.STRING)
     private TYPE type;
-    
+
     @Column
     private String name;
-    
+
     @Column
     private String description;
-    
+
     @Column
     private int w;
 
