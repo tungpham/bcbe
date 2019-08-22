@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -83,6 +84,11 @@ public class TemplateController {
             }
             return templateRepository.save(tem);
         }).orElseThrow(Util.notFound(temId, Template.class));
+    }
+
+    @GetMapping("/nodes")
+    public List<Node> getAllRoots() {
+        return nodeRepository.findNodeByParentIsNull();
     }
 
     @PostMapping("/nodes")
