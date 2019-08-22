@@ -8,6 +8,7 @@ import com.tung.bcbe.repository.NodeRepository;
 import com.tung.bcbe.repository.OptionRepository;
 import com.tung.bcbe.repository.TemplateRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -107,8 +108,32 @@ public class TemplateController {
         }).orElseThrow(Util.notFound(parentId, Node.class));
     }
 
-    @GetMapping("/nodes/{parent_id}")
-    public Node getNode(@PathVariable(name = "parent_id") UUID nodeId) {
+    @GetMapping("/nodes/{node_id}")
+    public Node getNode(@PathVariable(name = "node_id") UUID nodeId) {
         return nodeRepository.findById(nodeId).orElseThrow(Util.notFound(nodeId, Node.class));
+    }
+
+    @PutMapping("/nodes/{node_id}")
+    public Node editNode(@PathVariable(name = "node_id") UUID nodeId, @RequestBody @Valid Node node) {
+        return nodeRepository.findById(nodeId).map(current -> {
+            if (StringUtils.compare(node.getType(), current.getType()) != 0)  {
+                current.setType(node.getType());
+            }
+            if (StringUtils.compare(node.getName(), current.getName()) != 0) {
+                current.setName(node.getName());
+            }
+            if (StringUtils.compare(node.getDescription(), current.getDescription()) != 0) {
+                current.setDescription(node.getDescription());
+            }
+            if (StringUtils.compare(node.getValue(), current.getValue()) != 0) {
+                current.setValue(node.getValue());
+            }
+            return nodeRepository.save(current);
+        }).orElseThrow(Util.notFound(nodeId, Node.class));
+    }
+
+    @DeleteMapping("/nodes/{node_id}")
+    public void deleteNode(@PathVariable(name = "node_id") UUID nodeId) {
+        nodeRepository.deleteById(nodeId);
     }
 }
