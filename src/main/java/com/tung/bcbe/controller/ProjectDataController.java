@@ -27,26 +27,26 @@ import java.util.UUID;
 @RestController
 @Slf4j
 public class ProjectDataController {
-    
+
     @Autowired
     private LevelRepository levelRepository;
-    
+
     @Autowired
     private RoomRepository roomRepository;
-    
+
     @Autowired
     private ProjectRepository projectRepository;
-    
+
     @GetMapping("/projects/{prj_id}/levels")
     public List<Level> getData(@PathVariable(name = "prj_id") UUID projId) {
         List<Level> levels = levelRepository.findByProjectId(projId);
         for (Level level : levels) {
             List<Room> rooms = roomRepository.findByLevelId(level.getId());
-            level.setRooms(rooms);   
+            level.setRooms(rooms);
         }
         return levels;
     }
-    
+
     @PostMapping("/projects/{prj_id}/levels")
     public Level createLevel(@PathVariable(value = "prj_id") UUID prj_id, @RequestBody @Valid Level level) {
         return projectRepository.findById(prj_id).map(project -> {
@@ -55,9 +55,9 @@ public class ProjectDataController {
             }
         ).orElseThrow(Util.notFound(prj_id, Project.class));
     }
-    
+
     @GetMapping("/levels/{lvl_id}")
-    public Level getLevel(@PathVariable(value = "lvl_id") UUID lvl_id, 
+    public Level getLevel(@PathVariable(value = "lvl_id") UUID lvl_id,
                           @RequestParam(required = false, defaultValue = "false") String full) {
         Level level = levelRepository.findById(lvl_id).orElseThrow(Util.notFound(lvl_id, Level.class));
         if (full.equals("true")) {
@@ -71,7 +71,7 @@ public class ProjectDataController {
     public void deleteLevel(@PathVariable(value = "lvl_id") UUID lvl_id) {
         levelRepository.deleteById(lvl_id);
     }
-    
+
     @PutMapping("/levels/{lvl_id}")
     public Level updateLevel(@PathVariable(value = "lvl_id") UUID lvl_id, @RequestBody @Valid Level update) {
         return levelRepository.findById(lvl_id).map(current -> {
@@ -81,10 +81,13 @@ public class ProjectDataController {
             if (update.getName() != null && StringUtils.compare(current.getName(), update.getName()) != 0) {
                 current.setName(update.getName());
             }
+            if (update.getNumber() != null && update.getNumber() != current.getNumber()) {
+                current.setNumber(update.getNumber());
+            }
             return levelRepository.save(current);
         }).orElseThrow(Util.notFound(lvl_id, Level.class));
     }
-    
+
     @PostMapping("/levels/{lvl_id}/rooms")
     public Room createRoom(@PathVariable(value = "lvl_id") UUID lvl_id, @RequestBody @Valid Room room) {
         return levelRepository.findById(lvl_id).map(level -> {
@@ -92,12 +95,12 @@ public class ProjectDataController {
             return roomRepository.save(room);
         }).orElseThrow(Util.notFound(lvl_id, Level.class));
     }
-    
+
     @GetMapping("/rooms/{room_id}")
     public Room getRoom(@PathVariable(value = "room_id") UUID roomId) {
         return roomRepository.findById(roomId).orElseThrow(Util.notFound(roomId, Room.class));
     }
-    
+
     @PutMapping("/rooms/{room_id}")
     public Room updateRoom(@PathVariable(value = "room_id") UUID roomId, @RequestBody @Valid Room room) {
         return roomRepository.findById(roomId).map(current -> {
@@ -110,7 +113,7 @@ public class ProjectDataController {
             return roomRepository.save(current);
         }).orElseThrow(Util.notFound(roomId, Room.class));
     }
-    
+
     @DeleteMapping("/rooms/{room_id}")
     public void deleteRoom(@PathVariable(value = "room_id") UUID roomId) {
         roomRepository.deleteById(roomId);

@@ -24,21 +24,21 @@ import java.util.List;
 @Entity(name = "level")
 @Table(name = "level")
 public class Level extends ID {
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proj_id", referencedColumnName = "id")
     @JsonIgnore
     private Project project;
-    
-    @Column(updatable = false)
-    private int number;
-    
+
+    @Column
+    private Integer number;
+
     @Column
     private String name;
-    
+
     @Column
     private String description;
-    
+
     @OneToMany(mappedBy = "level", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms;
 }
