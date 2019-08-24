@@ -1,11 +1,15 @@
 package com.tung.bcbe.controller;
 
 import com.tung.bcbe.model.Level;
+import com.tung.bcbe.model.Node;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.Room;
+import com.tung.bcbe.model.Selection;
 import com.tung.bcbe.repository.LevelRepository;
+import com.tung.bcbe.repository.NodeRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.RoomRepository;
+import com.tung.bcbe.repository.SelectionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +23,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -36,6 +43,12 @@ public class ProjectDataController {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private SelectionRepository selectionRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @GetMapping("/projects/{prj_id}/levels")
     public List<Level> getData(@PathVariable(name = "prj_id") UUID projId) {
@@ -98,7 +111,10 @@ public class ProjectDataController {
 
     @GetMapping("/rooms/{room_id}")
     public Room getRoom(@PathVariable(value = "room_id") UUID roomId) {
-        return roomRepository.findById(roomId).orElseThrow(Util.notFound(roomId, Room.class));
+        Room room = roomRepository.findById(roomId).orElseThrow(Util.notFound(roomId, Room.class));
+        room.setSelectionMap(room.getSelectionList().stream()
+                .collect(Collectors.toMap(x -> x.getCategory().getId(), Function.identity())));
+        return room;
     }
 
     @PutMapping("/rooms/{room_id}")
@@ -117,5 +133,33 @@ public class ProjectDataController {
     @DeleteMapping("/rooms/{room_id}")
     public void deleteRoom(@PathVariable(value = "room_id") UUID roomId) {
         roomRepository.deleteById(roomId);
+    }
+
+    @PostMapping("/rooms/{room_id}/categories/{category_id}/selections/{selection_id}")
+    public Selection saveSelection(@PathVariable(value = "room_id") UUID roomId,
+                                   @PathVariable(value = "category_id") UUID categoryId,
+                                   @PathVariable(value = "selection_id") UUID selectionId,
+                                   @RequestBody @Valid Selection selection) {
+        return roomRepository.findById(roomId).map(room ->
+            nodeRepository.findById(categoryId).map(category ->
+                nodeRepository.findById(selectionId).map(finalSelection -> {
+                    selection.setCategory(category);
+                    selection.setSelection(finalSelection);
+                    selection.setRoom(room);
+                    return selectionRepository.save(selection);
+                }).orElseThrow(Util.notFound(selectionId, Node.class))
+            ).orElseThrow(Util.notFound(categoryId, Node.class))
+        ).orElseThrow(Util.notFound(roomId, Room.class));
+    }
+
+    @Transactional
+    @DeleteMapping("/selections/{id}")
+    public void deleteSelection(@PathVariable(value = "id") UUID id) {
+        selectionRepository.deleteById(id);
+    }
+
+    @GetMapping("/selections/{id}")
+    public Selection getSelection(@PathVariable(value = "id") UUID id) {
+        return selectionRepository.findById(id).orElseThrow(Util.notFound(id, Selection.class));
     }
 }

@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS proposalfile;
 DROP TABLE IF EXISTS proposalmsgfile;
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS proposal;
+DROP TABLE IF EXISTS selection;
 DROP TABLE IF EXISTS room;
 DROP TABLE IF EXISTS level;
 DROP TABLE IF EXISTS project;
@@ -294,4 +295,17 @@ CREATE TABLE node (
     updated_at timestamp not null,
     updated_by varchar(50),
     unique (parent_id, name)
-)
+);
+
+CREATE TABLE selection (
+    id uuid primary key,
+    room_id uuid references room,
+    category_id uuid references node,
+    selection_id uuid references node,
+    option jsonb,
+    breadcrumb uuid[],
+    unique (room_id, category_id, selection_id),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
