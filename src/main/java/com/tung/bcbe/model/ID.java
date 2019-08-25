@@ -1,5 +1,6 @@
 package com.tung.bcbe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vladmihalcea.hibernate.type.array.UUIDArrayType;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import com.vladmihalcea.hibernate.type.json.JsonStringType;
@@ -40,14 +41,17 @@ public abstract class ID implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
     @CreatedDate
+    @JsonIgnore
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     @LastModifiedDate
+    @JsonIgnore
     private Date updatedAt;
 
     @Column
     @LastModifiedBy
+    @JsonIgnore
     private String updatedBy;
 }

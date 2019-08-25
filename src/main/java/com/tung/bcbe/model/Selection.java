@@ -33,12 +33,10 @@ public class Selection extends ID {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
-    @JsonIgnore
     private Node category;
 
     @OneToOne
     @JoinColumn(name = "selection_id", referencedColumnName = "id")
-    @JsonIgnore
     private Node selection;
 
     @Type(type = "uuid-array")

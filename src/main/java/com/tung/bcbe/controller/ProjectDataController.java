@@ -27,7 +27,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -112,8 +111,15 @@ public class ProjectDataController {
     @GetMapping("/rooms/{room_id}")
     public Room getRoom(@PathVariable(value = "room_id") UUID roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(Util.notFound(roomId, Room.class));
-        room.setSelectionMap(room.getSelectionList().stream()
-                .collect(Collectors.toMap(x -> x.getCategory().getId(), Function.identity())));
+
+        /*
+        Clumsy way of filter out the children and grandchildren of the category so that the data returned isn't huge
+        because Node children is always eagerly fetched.
+         */
+        room.setSelectionList(room.getSelectionList().stream().map(s -> {
+           s.getCategory().setChildren(null);
+           return s;
+        }).collect(Collectors.toList()));
         return room;
     }
 
@@ -161,5 +167,18 @@ public class ProjectDataController {
     @GetMapping("/selections/{id}")
     public Selection getSelection(@PathVariable(value = "id") UUID id) {
         return selectionRepository.findById(id).orElseThrow(Util.notFound(id, Selection.class));
+    }
+
+    @PutMapping("/selections/{id}")
+    public Selection updateSelection(@PathVariable(value = "id") UUID id, @RequestBody @Valid Selection update) {
+        return selectionRepository.findById(id).map(s -> {
+            if (update.getOption() != null) {
+                s.setOption(update.getOption());
+            }
+            if (update.getBreadcrumb() != null) {
+                s.setBreadcrumb(update.getBreadcrumb());
+            }
+            return selectionRepository.save(s);
+        }).orElseThrow(Util.notFound(id, Selection.class));
     }
 }
