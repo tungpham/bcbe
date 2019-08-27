@@ -116,7 +116,7 @@ public class ProjectDataController {
         Clumsy way of filter out the children and grandchildren of the category so that the data returned isn't huge
         because Node children is always eagerly fetched.
          */
-        room.setSelectionList(room.getSelectionList().stream().map(s -> {
+        room.setSelectionList(room.getSelectionList().stream().distinct().map(s -> {
            s.getCategory().setChildren(null);
            return s;
         }).collect(Collectors.toList()));

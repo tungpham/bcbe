@@ -304,7 +304,7 @@ CREATE TABLE selection (
     selection_id uuid references node,
     option jsonb,
     breadcrumb uuid[],
-    unique (room_id, category_id, selection_id),
+    unique (room_id, category_id),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
