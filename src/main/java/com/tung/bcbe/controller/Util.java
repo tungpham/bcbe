@@ -27,7 +27,7 @@ public class Util {
             return new ResponseStatusException(HttpStatus.NOT_FOUND, msg + " not found");
         };
     }
-    
+
     public static ResponseEntity<byte[]> download(AmazonS3 s3, String bucket, String key) throws IOException {
         S3Object s3Object = s3.getObject(bucket, key);
         InputStream is = s3Object.getObjectContent();
@@ -38,7 +38,7 @@ public class Util {
         String[] parts = key.split("/");
         String filename = parts[parts.length - 1];
         log.info("filename is " + filename);
-        
+
         return ResponseEntity.ok().contentType(contentType(key))
                 .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + filename + "\"")
                 .body(baos.toByteArray());
@@ -54,10 +54,16 @@ public class Util {
             default: return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
-    
+
     public static void putFile(AmazonS3 s3, String bucket, String key, MultipartFile file) throws IOException {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
         s3.putObject(bucket, key, file.getInputStream(), objectMetadata);
+    }
+
+    public static void putFile(AmazonS3 s3, String bucket, String key, long size, InputStream inputStream) {
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(size);
+        s3.putObject(bucket, key, inputStream, objectMetadata);
     }
 }

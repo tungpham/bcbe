@@ -17,7 +17,7 @@ import javax.persistence.Table;
 @Entity(name = "address")
 @Table(name = "address")
 public class Address extends ID {
-    
+
     @Column(nullable = false)
     private String name;
 
@@ -29,4 +29,19 @@ public class Address extends ID {
 
     @Column(nullable = false)
     private String phone;
+
+    @Column
+    private String website;
+
+    @Column
+    private String company;
+
+    @Column
+    private String founded;
+
+    @Column
+    private String employees;
+
+    @Column
+    private String avatar;
 }

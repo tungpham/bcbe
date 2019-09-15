@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.imageio.ImageIO;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -42,9 +43,15 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -53,31 +60,31 @@ import java.util.stream.Collectors;
 @RequestMapping("/contractors")
 @Slf4j
 public class ContractorController {
-    
+
     @Autowired
     private ContractorRepository contractorRepository;
 
     @Autowired
     private ProjectRepository projectRepository;
-    
+
     @Autowired
     private SpecialtyRepository specialtyRepository;
-    
+
     @Autowired
     private ContractorSpecialtyRepository contractorSpecialtyRepository;
-    
+
     @Autowired
     private ContractorFileRepository contractorFileRepository;
-    
+
     @Autowired
     private AmazonS3 s3;
 
     @Value("${S3_BUCKET_CON}")
     private String bucket;
-    
+
     @PersistenceContext
     private EntityManager entityManager;
-    
+
     @PostMapping
     public Contractor create(@Valid @RequestBody Contractor contractor) {
         contractor.setStatus(Contractor.STATUS.PENDING);
@@ -97,19 +104,25 @@ public class ContractorController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
-    
+
     @GetMapping("/{con_id}")
     public Optional<Contractor> get(@PathVariable(name = "con_id") UUID genId) {
-        return contractorRepository.findById(genId);
+        return contractorRepository.findById(genId).map(contractor -> {
+            Set<ContractorFile> files = contractor.getContractorFiles().stream()
+                    .filter(file -> !ContractorFile.TYPE.AVATAR.equals(file.getType()))
+                    .collect(Collectors.toSet());
+            contractor.setContractorFiles(files);
+            return contractor;
+        });
     }
-    
+
     @GetMapping
     public Page<Contractor> getAll(Pageable pageable) {
         return contractorRepository.findAllBy(pageable);
     }
-    
+
     @PostMapping("/{con_id}")
-    public Contractor edit(@PathVariable(name = "con_id") UUID genId, 
+    public Contractor edit(@PathVariable(name = "con_id") UUID genId,
                                     @Valid @RequestBody Contractor genContractor) {
         return contractorRepository.findById(genId).map(gen -> {
             Address existing = gen.getAddress();
@@ -119,6 +132,10 @@ public class ContractorController {
                 existing.setStreet(update.getStreet());
                 existing.setCity(update.getCity());
                 existing.setPhone(update.getPhone());
+                existing.setCompany(update.getCompany());
+                existing.setWebsite(update.getWebsite());
+                existing.setEmployees(update.getEmployees());
+                existing.setFounded(update.getFounded());
             } else {
                 gen.setAddress(update);
             }
@@ -129,42 +146,79 @@ public class ContractorController {
             if (genContractor.getStatusReason() != null) {
                 gen.setStatusReason(genContractor.getStatusReason());
             }
-            
+
             return contractorRepository.save(gen);
         }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
 
     @PostMapping("/{con_id}/files/upload")
-    public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) {
-        upload(conId, file);
+    public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
+                           @RequestParam("type") String type) throws IOException {
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.TYPE.valueOf(type));
     }
-    
+
     @PostMapping("/{con_id}/files/upload/multiple")
-    public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile[] files) {
+    public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile[] files,
+                           @RequestParam("type") String type) throws IOException {
         for (MultipartFile file : files) {
-            upload(conId, file);
+            upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.TYPE.valueOf(type));
         }
     }
 
-    public void upload(UUID conId, MultipartFile file) {
+    @PostMapping("/{con_id}/files/upload/avatar")
+    public void uploadAvatar(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
+
+        BufferedImage img = ImageIO.read(file.getInputStream());
+
+        int width = 60;
+        int height = 60;
+        Image tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(resized, "png", os);
+        InputStream is = new ByteArrayInputStream(os.toByteArray());
+
+        upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.TYPE.AVATAR);
+    }
+
+    public void upload(UUID conId, String fileName, long size, InputStream inputStream, ContractorFile.TYPE type) {
         contractorRepository.findById(conId).map(contractor -> {
             ContractorFile contractorFile = new ContractorFile();
             contractorFile.setContractor(contractor);
-            contractorFile.setName(file.getOriginalFilename());
-            String key = contractor.getId() + "/" + file.getOriginalFilename();
+            contractorFile.setName(fileName);
+            contractorFile.setType(type);
+            String key = contractor.getId() + "/" + fileName;
             try {
-                Util.putFile(s3, bucket, key, file);
-            } catch (IOException e) {
+                Util.putFile(s3, bucket, key, size, inputStream);
+            } catch (Exception e) {
                 throw new RuntimeException("Cannot upload " + bucket + "/" + key, e);
             }
             return contractorFileRepository.save(contractorFile);
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
-    
+
     @GetMapping("/{con_id}/files/{filename}")
     public ResponseEntity<byte[]> download(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "filename") String filename) throws IOException {
         return Util.download(s3, bucket, conId + "/" + filename);
+    }
+
+    @GetMapping("/{con_id}/avatar")
+    public ResponseEntity<byte[]> getAvatar(@PathVariable(name = "con_id") UUID conId) throws IOException {
+        String filename = contractorRepository.findById(conId).map(contractor ->
+                contractor.getContractorFiles().stream()
+                        .filter(contractorFile -> ContractorFile.TYPE.AVATAR.equals(contractorFile.getType()))
+                        .findAny().map(ContractorFile::getName).orElse(null)
+        ).orElseThrow(Util.notFound(conId, Contractor.class));
+
+        if (filename != null)
+            return Util.download(s3, bucket, conId + "/" + filename);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Transactional
@@ -179,7 +233,7 @@ public class ContractorController {
             return contractor;
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
-    
+
     @PostMapping("/{con_id}/specialties/{spec_id}")
     public Contractor addSpecialtyToContractor(@PathVariable(name = "con_id") UUID conId,
                                                @PathVariable(name = "spec_id") UUID specId) {
@@ -193,34 +247,34 @@ public class ContractorController {
             return contractorRepository.save(contractor);
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
-    
+
     @Transactional
     @DeleteMapping("/{con_id}/specialties/{spec_id}")
     public void removeSpecialtyFromContractor(@PathVariable(name = "con_id") UUID conId,
                                               @PathVariable(name = "spec_id") UUID specId) {
         contractorSpecialtyRepository.deleteContractorSpecialtiesByContractorIdAndSpecialtyId(conId, specId);
     }
-    
+
     @PostMapping("/search")
     public List<Contractor> search(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Contractor> query = cb.createQuery(Contractor.class);
         Root<Contractor> contractor = query.from(Contractor.class);
-        
+
         Join addressJoin = contractor.join("address");
-        
+
         Predicate predicate = cb.conjunction();
-        
+
         if (StringUtils.isNotBlank(filter.getName())) {
             Path<String> name = addressJoin.get("name");
             predicate = cb.like(name, like(filter.getName()));
         }
-        
+
         if (StringUtils.isNotBlank(filter.getCity())) {
             Path<String> city = addressJoin.get("city");
             predicate = cb.and(predicate, cb.like(city, like(filter.getCity())));
         }
-        
+
         if (filter.getSpecialty() != null) {
             Join contractorSpecialty = contractor.join("contractorSpecialties");
             Join specialty = contractorSpecialty.join("specialty");
@@ -231,12 +285,12 @@ public class ContractorController {
             }
             predicate = cb.and(predicate, inClause);
         }
-        
+
         query.select(contractor).where(predicate);
-        
+
         return entityManager.createQuery(query).getResultList();
     }
-    
+
     public String like(String s) {
         return "%"+s+"%";
     }

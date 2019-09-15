@@ -10,6 +10,8 @@ import org.springframework.data.annotation.PersistenceConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -30,4 +32,13 @@ public class ContractorFile extends ID {
     @JoinColumn(name = "con_id", referencedColumnName = "id")
     @JsonIgnore
     private Contractor contractor;
+
+    public enum TYPE {
+        AVATAR,
+        LICENSE,
+        PICTURE
+    }
+
+    @Enumerated(EnumType.STRING)
+    private TYPE type;
 }

@@ -29,6 +29,10 @@ CREATE TABLE address (
     phone varchar(12),
     street varchar(100),
     city varchar(100),
+    website varchar(100),
+    company varchar(100),
+    founded varchar(4),
+    employees varchar(1000),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
