@@ -165,6 +165,16 @@ public class ContractorController {
         }
     }
 
+    @PostMapping("/{con_id}/files/upload/photo")
+    public void uploadPhoto(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.PICTURE);
+    }
+
+    @PostMapping("/{con_id}/files/upload/document")
+    public void uploadDocument(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.DOCUMENT);
+    }
+
     @PostMapping("/{con_id}/files/upload/avatar")
     public void uploadAvatar(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
 

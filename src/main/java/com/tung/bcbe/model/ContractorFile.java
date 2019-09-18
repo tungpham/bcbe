@@ -35,7 +35,7 @@ public class ContractorFile extends ID {
 
     public enum Type {
         AVATAR,
-        LICENSE,
+        DOCUMENT,
         PICTURE
     }
 
