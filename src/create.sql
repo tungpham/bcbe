@@ -69,6 +69,8 @@ CREATE TABLE project (
     status varchar(10),
     due date,
     type varchar(20),
+    duration int,
+    year varchar(4),
     gen_id uuid references contractor,
     created_at timestamp not null,
     updated_at timestamp not null,

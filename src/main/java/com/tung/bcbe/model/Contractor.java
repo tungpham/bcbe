@@ -27,29 +27,29 @@ import java.util.Set;
 @Entity(name = "contractor")
 @Table(name = "contractor")
 public class Contractor extends ID {
-    
+
     public enum STATUS {
         PENDING,
         ACTIVE,
         REJECTED
     }
-    
+
     @Column(updatable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
     private STATUS status;
-    
+
     @Column(name = "status_reason")
     private String statusReason;
-    
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
-    
+
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ContractorFile> contractorFiles;
-    
+
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ContractorSpecialty> contractorSpecialties;
 }

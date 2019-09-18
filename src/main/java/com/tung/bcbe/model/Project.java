@@ -57,6 +57,15 @@ public class Project extends ID {
     @Enumerated(EnumType.STRING)
     private Type type;
 
+    @Column
+    private Integer duration;
+
+    /**
+     * This is used for sub contractor to add past project, so we know what year the project was completed.
+     */
+    @Column
+    private String year;
+
     @ManyToOne
     @JoinColumn(name = "gen_id", referencedColumnName = "id", nullable = false)
     private Contractor genContractor;

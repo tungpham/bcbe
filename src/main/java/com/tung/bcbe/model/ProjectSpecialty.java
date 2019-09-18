@@ -21,12 +21,12 @@ import javax.persistence.Table;
 @Entity(name = "project_specialty")
 @Table(name = "project_specialty")
 public class ProjectSpecialty extends ID {
-    
+
     @ManyToOne
     @JoinColumn(name = "proj_id", referencedColumnName = "id")
     @JsonIgnore
     private Project project;
-    
+
     @ManyToOne
     @JoinColumn(name = "spec_id", referencedColumnName = "id")
     private Specialty specialty;

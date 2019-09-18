@@ -1,6 +1,7 @@
 package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.tung.bcbe.dto.PastProject;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
@@ -101,13 +102,15 @@ public class ProjectController {
      * Sub contractor can manually create past projects for their profile. These projects would have type of
      * SUBCON_PROJECT and status of ARCHIVED
      * @param genId
-     * @param project
+     * @param pastProject
      * @return
      */
     @PostMapping("/contractors/{gen_id}/projects/past")
     public Project createPastProject(@PathVariable(value = "gen_id") UUID genId,
-                                     @Valid @RequestBody Project project) {
-        Project proj = createProject(genId, project, Project.Status.ARCHIVED, Project.Type.SUBCON_PROJECT);
+                                     @Valid @RequestBody PastProject pastProject) {
+        Project proj = createProject(genId, pastProject.getProject(), Project.Status.ARCHIVED, Project.Type.SUBCON_PROJECT);
+        addSpecialtyToProject(proj.getId(), UUID.fromString(pastProject.getSpecialtyId()));
+
         proj.setGenContractor(null);
         return proj;
     }
