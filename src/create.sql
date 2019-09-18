@@ -56,7 +56,6 @@ CREATE TABLE contractorfile (
     id uuid primary key,
     name varchar(100),
     con_id uuid references contractor,
-    unique(con_id, name),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -69,8 +68,8 @@ CREATE TABLE project (
     budget numeric(10,2),
     status varchar(10),
     due date,
+    type varchar(20),
     gen_id uuid references contractor,
-    unique(title),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

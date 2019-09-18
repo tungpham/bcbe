@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface ProjectRepository extends PagingAndSortingRepository<Project, UUID> {
     Page<Project> findByGenContractorIdAndStatus(UUID genId, Project.Status status, Pageable pageable);
     Page<Project> findAllByStatus(Project.Status status, Pageable pageable);
+    Page<Project> findByGenContractorIdAndType(UUID genId, Project.Type type, Pageable pageable);
 }

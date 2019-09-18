@@ -33,7 +33,12 @@ public class Project extends ID {
         ACTIVE,
         ARCHIVED
     }
-    
+
+    public enum Type {
+        OWNER_PROJECT,
+        SUBCON_PROJECT
+    }
+
     @Column
     private String title;
 
@@ -45,26 +50,29 @@ public class Project extends ID {
 
     @Enumerated(EnumType.STRING)
     private Status status;
-    
+
     @Column
     private Date due;
-    
+
+    @Enumerated(EnumType.STRING)
+    private Type type;
+
     @ManyToOne
     @JoinColumn(name = "gen_id", referencedColumnName = "id", nullable = false)
     private Contractor genContractor;
-    
+
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ProjectFile> projectFiles;
-    
+
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private Set<ProjectTemplate> projectTemplates;
-    
+
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ProjectSpecialty> projectSpecialties;
-    
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProjectInvite> projectInvites;
-    
+
     @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ProjectRelationship> relationships;
 }

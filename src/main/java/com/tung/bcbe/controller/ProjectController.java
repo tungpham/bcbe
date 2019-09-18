@@ -57,40 +57,78 @@ public class ProjectController {
 
     @Autowired
     private ContractorRepository contractorRepository;
-    
+
     @Autowired
     private ProjectFileRepository projectFileRepository;
-    
+
     @Autowired
     private TemplateRepository templateRepository;
-    
+
     @Autowired
     private ProjectTemplateRepository projectTemplateRepository;
-    
+
     @Autowired
     private SpecialtyRepository specialtyRepository;
-    
+
     @Autowired
     private ProjectSpecialtyRepository projectSpecialtyRepository;
 
     @Autowired
     private ProjectInviteRepository projectInviteRepository;
-    
+
     @Autowired
     private ProjectRelationshipRepository projectRelationshipRepository;
-    
+
     @Autowired
     private AmazonS3 s3;
-    
+
     @Value("${S3_BUCKET}")
     private String bucket;
 
+    /**
+     * User create new project. The project will have status ACTIVE and type of OWNER_PROJECT
+     * @param genId
+     * @param project
+     * @return
+     */
     @PostMapping("/contractors/{gen_id}/projects")
     public Project createProject(@PathVariable(value = "gen_id") UUID genId,
                                  @Valid @RequestBody Project project) {
+        return createProject(genId, project, Project.Status.ACTIVE, Project.Type.OWNER_PROJECT);
+    }
+
+    /**
+     * Sub contractor can manually create past projects for their profile. These projects would have type of
+     * SUBCON_PROJECT and status of ARCHIVED
+     * @param genId
+     * @param project
+     * @return
+     */
+    @PostMapping("/contractors/{gen_id}/projects/past")
+    public Project createPastProject(@PathVariable(value = "gen_id") UUID genId,
+                                     @Valid @RequestBody Project project) {
+        Project proj = createProject(genId, project, Project.Status.ARCHIVED, Project.Type.SUBCON_PROJECT);
+        proj.setGenContractor(null);
+        return proj;
+    }
+
+    /**
+     * Get past projects for sub contractor
+     * @param genId
+     * @return
+     */
+    @GetMapping("/contractors/{gen_id}/projects/past")
+    public Page<Project> getPastProjects(@PathVariable(value = "gen_id") UUID genId, Pageable pageable) {
+        Page<Project> page = projectRepository.findByGenContractorIdAndType(genId, Project.Type.SUBCON_PROJECT, pageable);
+        page.forEach(p -> p.setGenContractor(null));
+        return page;
+    }
+
+    public Project createProject(UUID genId, Project project, Project.Status status, Project.Type type) {
         return contractorRepository.findById(genId).map(genContractor -> {
             project.setGenContractor(genContractor);
-            project.setStatus(Project.Status.ACTIVE);
+            project.setStatus(status);
+            project.setType(type);
             return projectRepository.save(project);
         }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
@@ -108,7 +146,14 @@ public class ProjectController {
         }).orElseThrow(Util.notFound(projId, Project.class));
         return subProject;
     }
-    
+
+    /**
+     * Get list of current owner projects
+     * @param genId
+     * @param status
+     * @param pageable
+     * @return
+     */
     @GetMapping("/contractors/{gen_id}/projects")
     public Page<Project> getProjectsByGenContractor(
             @PathVariable(value = "gen_id") UUID genId,
@@ -116,7 +161,7 @@ public class ProjectController {
             Pageable pageable) {
         return projectRepository.findByGenContractorIdAndStatus(genId, status, pageable);
     }
-    
+
     @GetMapping("/projects/{project_id}")
     public Project getProjectById(@PathVariable(value = "project_id") UUID projectId) {
         return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId, Project.class));
@@ -126,9 +171,9 @@ public class ProjectController {
     public Page<Project> getAllProjects(Pageable pageable) {
         return projectRepository.findAllByStatus(Project.Status.ACTIVE, pageable);
     }
-    
+
     @PutMapping("/projects/{project_id}")
-    public Project editProjectById(@PathVariable(value = "project_id") UUID projectId, 
+    public Project editProjectById(@PathVariable(value = "project_id") UUID projectId,
                                             @RequestBody @Valid Project project) {
         return projectRepository.findById(projectId).map(prj -> {
             if (project.getTitle() != null) {
@@ -159,11 +204,11 @@ public class ProjectController {
     public void deleteProjectById(@PathVariable(value = "project_id") UUID projectId) {
         projectRepository.deleteById(projectId);
     }
-    
+
     @PostMapping("/projects/{project_id}/templates/{tem_id}")
     public Project addTemplateToProject(@PathVariable(value = "project_id") UUID projectId,
                                         @PathVariable(value = "tem_id") UUID temId) {
-        return projectRepository.findById(projectId).map(project -> 
+        return projectRepository.findById(projectId).map(project ->
             templateRepository.findById(temId).map(template -> {
                 ProjectTemplate projectTemplate = new ProjectTemplate();
                 projectTemplate.setProject(project);
@@ -179,7 +224,7 @@ public class ProjectController {
                                           @PathVariable(value = "tem_id") UUID temId) {
         projectTemplateRepository.deleteProjectTemplateByProjectIdAndTemplateId(projectId, temId);
     }
-    
+
     @PostMapping("/projects/{project_id}/files/upload")
     public void uploadFile(@PathVariable(value = "project_id") UUID projectId,
                                       @RequestParam("file") MultipartFile file,
@@ -195,7 +240,7 @@ public class ProjectController {
             upload(projectId, file);
         }
     }
-    
+
     public void upload(UUID projectId, MultipartFile file) {
         projectRepository.findById(projectId).ifPresent(project -> {
             try {
@@ -206,22 +251,22 @@ public class ProjectController {
                 String key = project.getId() + "/" + file.getOriginalFilename();
                 Util.putFile(s3, bucket, key, file);
                 projectFileRepository.save(projectFile);
-                
+
             } catch (IOException e) {
                 log.error("error uploading file", e);
                 throw new RuntimeException(e);
             }
         });
     }
-    
+
     @GetMapping("/projects/{project_id}/files")
     public List<ProjectFile> getProjectFiles(@PathVariable(value = "project_id") UUID projectId) {
         return projectFileRepository.findByProjectId(projectId);
     }
-    
+
     @Transactional
     @DeleteMapping("/projects/{project_id}/files/{file_name}")
-    public void deleteFile(@PathVariable(value = "project_id") UUID projectId, 
+    public void deleteFile(@PathVariable(value = "project_id") UUID projectId,
                            @PathVariable(value = "file_name") String fileName) {
         projectRepository.findById(projectId).ifPresent(project -> {
             String key = project.getId() + "/" + fileName;
@@ -229,19 +274,19 @@ public class ProjectController {
             projectFileRepository.deleteByName(fileName);
         });
     }
-    
+
     @GetMapping("/projects/{project_id}/files/{file_name}")
     public ResponseEntity<byte[]> download(@PathVariable(value = "project_id") UUID projectId,
                                            @PathVariable(value = "file_name") String fileName) throws IOException {
         String key = projectId + "/" + fileName;
         return Util.download(s3, bucket, key);
     }
-    
+
     @PostMapping("/projects/{project_id}/specialties/{spec_id}")
     public Project addSpecialtyToProject(@PathVariable(value = "project_id") UUID projectId,
                                          @PathVariable(value = "spec_id") UUID specId) {
-        return projectRepository.findById(projectId).map(project -> 
-            specialtyRepository.findById(specId).map(specialty -> { 
+        return projectRepository.findById(projectId).map(project ->
+            specialtyRepository.findById(specId).map(specialty -> {
                 ProjectSpecialty projectSpecialty = new ProjectSpecialty();
                 projectSpecialty.setProject(project);
                 projectSpecialty.setSpecialty(specialty);
@@ -249,7 +294,7 @@ public class ProjectController {
                 return projectRepository.save(project);
         }).orElseThrow(Util.notFound(specId, Specialty.class))).orElseThrow(Util.notFound(projectId, Project.class));
     }
-    
+
     @Transactional
     @DeleteMapping("/projects/{project_id}/specialties/{spec_id}")
     public void removeSpecialtyFromProject(@PathVariable(value = "project_id") UUID projectId,
@@ -281,7 +326,7 @@ public class ProjectController {
         PageImpl<Project> projects = new PageImpl<Project>(content, pageable, page.getTotalElements());
         return projects;
     }
-    
+
     @GetMapping("/projects/{project_id}/invites")
     public List<Contractor> findInviteSubContractorByProject(@PathVariable(value = "project_id") UUID projectId) {
         return projectInviteRepository.findByProjectId(projectId).stream().map(ProjectInvite::getSubContractor).collect(Collectors.toList());

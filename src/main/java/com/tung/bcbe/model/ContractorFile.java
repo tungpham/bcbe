@@ -33,12 +33,12 @@ public class ContractorFile extends ID {
     @JsonIgnore
     private Contractor contractor;
 
-    public enum TYPE {
+    public enum Type {
         AVATAR,
         LICENSE,
         PICTURE
     }
 
     @Enumerated(EnumType.STRING)
-    private TYPE type;
+    private Type type;
 }

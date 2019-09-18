@@ -109,7 +109,7 @@ public class ContractorController {
     public Optional<Contractor> get(@PathVariable(name = "con_id") UUID genId) {
         return contractorRepository.findById(genId).map(contractor -> {
             Set<ContractorFile> files = contractor.getContractorFiles().stream()
-                    .filter(file -> !ContractorFile.TYPE.AVATAR.equals(file.getType()))
+                    .filter(file -> !ContractorFile.Type.AVATAR.equals(file.getType()))
                     .collect(Collectors.toSet());
             contractor.setContractorFiles(files);
             return contractor;
@@ -154,14 +154,14 @@ public class ContractorController {
     @PostMapping("/{con_id}/files/upload")
     public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
                            @RequestParam("type") String type) throws IOException {
-        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.TYPE.valueOf(type));
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.valueOf(type));
     }
 
     @PostMapping("/{con_id}/files/upload/multiple")
     public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile[] files,
                            @RequestParam("type") String type) throws IOException {
         for (MultipartFile file : files) {
-            upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.TYPE.valueOf(type));
+            upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.valueOf(type));
         }
     }
 
@@ -182,10 +182,10 @@ public class ContractorController {
         ImageIO.write(resized, "png", os);
         InputStream is = new ByteArrayInputStream(os.toByteArray());
 
-        upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.TYPE.AVATAR);
+        upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.Type.AVATAR);
     }
 
-    public void upload(UUID conId, String fileName, long size, InputStream inputStream, ContractorFile.TYPE type) {
+    public void upload(UUID conId, String fileName, long size, InputStream inputStream, ContractorFile.Type type) {
         contractorRepository.findById(conId).map(contractor -> {
             ContractorFile contractorFile = new ContractorFile();
             contractorFile.setContractor(contractor);
@@ -211,7 +211,7 @@ public class ContractorController {
     public ResponseEntity<byte[]> getAvatar(@PathVariable(name = "con_id") UUID conId) throws IOException {
         String filename = contractorRepository.findById(conId).map(contractor ->
                 contractor.getContractorFiles().stream()
-                        .filter(contractorFile -> ContractorFile.TYPE.AVATAR.equals(contractorFile.getType()))
+                        .filter(contractorFile -> ContractorFile.Type.AVATAR.equals(contractorFile.getType()))
                         .findAny().map(ContractorFile::getName).orElse(null)
         ).orElseThrow(Util.notFound(conId, Contractor.class));
 
