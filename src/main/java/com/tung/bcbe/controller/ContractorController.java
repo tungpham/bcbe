@@ -192,6 +192,10 @@ public class ContractorController {
         ImageIO.write(resized, "png", os);
         InputStream is = new ByteArrayInputStream(os.toByteArray());
 
+        contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.AVATAR).forEach(
+                contractorFile -> deleteContractorFile(conId, contractorFile.getName())
+        );
+
         upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.Type.AVATAR);
     }
 
@@ -233,11 +237,12 @@ public class ContractorController {
 
     @Transactional
     @DeleteMapping("/{con_id}/files/{filename}")
-    public void deleteFile(@PathVariable(name = "con_id") UUID conId,
+    public void deleteContractorFile(@PathVariable(name = "con_id") UUID conId,
                            @PathVariable(name = "filename") String filename) {
         contractorRepository.findById(conId).map(contractor -> {
             s3.deleteObject(bucket, contractor.getId() + "/" + filename);
-            List<ContractorFile> files = contractor.getContractorFiles().stream().filter(file -> file.getName().equals(filename))
+            List<ContractorFile> files = contractor.getContractorFiles().stream()
+                    .filter(file -> file.getName().equals(filename))
                     .collect(Collectors.toList());
             files.forEach(f -> contractorFileRepository.deleteById(f.getId()));
             return contractor;
