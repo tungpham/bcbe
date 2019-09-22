@@ -184,6 +184,9 @@ public class ContractorController {
 
     @PostMapping("/{con_id}/link")
     public void uploadLink(@PathVariable(name = "con_id") UUID conId, @RequestParam("url") String link) throws IOException {
+        if (StringUtils.isBlank(link)) {
+            return;
+        }
         String encode = URLEncoder.encode(link, StandardCharsets.UTF_8.toString());
         contractorRepository.findById(conId).map(contractor -> {
             ContractorFile contractorFile = ContractorFile.builder()
