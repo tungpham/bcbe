@@ -281,9 +281,11 @@ public class ContractorController {
     @DeleteMapping("/{con_id}/files/{id}")
     public void deleteContractorFileById(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "id") UUID id) {
-        ContractorFile file = contractorFileRepository.findById(id).orElseThrow(Util.notFound(id, ContractorFile.class));
-        s3.deleteObject(bucket, getConFilePath(conId, file.getName()));
-        contractorFileRepository.delete(file);
+        contractorFileRepository.findById(id).map(file -> {
+            s3.deleteObject(bucket, getConFilePath(conId, file.getName()));
+            contractorFileRepository.delete(file);
+            return file;
+        }).orElseThrow(Util.notFound(id, ContractorFile.class));
     }
 
     @PostMapping("/{con_id}/specialties/{spec_id}")
