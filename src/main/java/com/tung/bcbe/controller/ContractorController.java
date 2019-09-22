@@ -49,6 +49,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -170,9 +172,31 @@ public class ContractorController {
         upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.PICTURE);
     }
 
+    @GetMapping("/{con_id}/photos")
+    public List<ContractorFile> getPhotos(@PathVariable(name = "con_id") UUID conId) {
+        return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.PICTURE);
+    }
+
     @PostMapping("/{con_id}/files/upload/document")
     public void uploadDocument(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
         upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.DOCUMENT);
+    }
+
+    @PostMapping("/{con_id}/link")
+    public void uploadLink(@PathVariable(name = "con_id") UUID conId, @RequestParam("url") String link) throws IOException {
+        String encode = URLEncoder.encode(link, StandardCharsets.UTF_8.toString());
+        contractorRepository.findById(conId).map(contractor -> {
+            ContractorFile contractorFile = ContractorFile.builder()
+                    .name(encode)
+                    .type(ContractorFile.Type.LINK)
+                    .contractor(contractor).build();
+            return contractorFileRepository.save(contractorFile);
+        }).orElseThrow(Util.notFound(conId, Contractor.class));
+    }
+
+    @GetMapping("/{con_id}/link")
+    public List<ContractorFile> getLinks(@PathVariable(name = "con_id") UUID conId) {
+        return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.LINK);
     }
 
     @PostMapping("/{con_id}/files/upload/avatar")
@@ -192,11 +216,26 @@ public class ContractorController {
         ImageIO.write(resized, "png", os);
         InputStream is = new ByteArrayInputStream(os.toByteArray());
 
+        //delete old avatar file
         contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.AVATAR).forEach(
                 contractorFile -> deleteContractorFile(conId, contractorFile.getName())
         );
 
         upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.Type.AVATAR);
+    }
+
+    @GetMapping("/{con_id}/avatar")
+    public ResponseEntity<byte[]> getAvatar(@PathVariable(name = "con_id") UUID conId) throws IOException {
+        String filename = contractorRepository.findById(conId).map(contractor ->
+                contractor.getContractorFiles().stream()
+                        .filter(contractorFile -> ContractorFile.Type.AVATAR.equals(contractorFile.getType()))
+                        .findAny().map(ContractorFile::getName).orElse(null)
+        ).orElseThrow(Util.notFound(conId, Contractor.class));
+
+        if (filename != null)
+            return Util.download(s3, bucket, conId + "/" + filename);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     public void upload(UUID conId, String fileName, long size, InputStream inputStream, ContractorFile.Type type) {
@@ -219,20 +258,6 @@ public class ContractorController {
     public ResponseEntity<byte[]> download(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "filename") String filename) throws IOException {
         return Util.download(s3, bucket, conId + "/" + filename);
-    }
-
-    @GetMapping("/{con_id}/avatar")
-    public ResponseEntity<byte[]> getAvatar(@PathVariable(name = "con_id") UUID conId) throws IOException {
-        String filename = contractorRepository.findById(conId).map(contractor ->
-                contractor.getContractorFiles().stream()
-                        .filter(contractorFile -> ContractorFile.Type.AVATAR.equals(contractorFile.getType()))
-                        .findAny().map(ContractorFile::getName).orElse(null)
-        ).orElseThrow(Util.notFound(conId, Contractor.class));
-
-        if (filename != null)
-            return Util.download(s3, bucket, conId + "/" + filename);
-        else
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Transactional

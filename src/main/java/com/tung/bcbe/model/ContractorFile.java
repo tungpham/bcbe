@@ -36,7 +36,8 @@ public class ContractorFile extends ID {
     public enum Type {
         AVATAR,
         DOCUMENT,
-        PICTURE
+        PICTURE,
+        LINK
     }
 
     @Enumerated(EnumType.STRING)
