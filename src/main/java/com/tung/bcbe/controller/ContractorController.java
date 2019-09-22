@@ -221,7 +221,7 @@ public class ContractorController {
 
         //delete old avatar file
         contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.AVATAR).forEach(
-                contractorFile -> deleteContractorFile(conId, contractorFile.getName())
+                contractorFile -> deleteContractorFileById(conId, contractorFile.getId())
         );
 
         upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.Type.AVATAR);
@@ -247,7 +247,7 @@ public class ContractorController {
             contractorFile.setContractor(contractor);
             contractorFile.setName(fileName);
             contractorFile.setType(type);
-            String key = contractor.getId() + "/" + fileName;
+            String key = getConFilePath(contractor.getId(), fileName);
             try {
                 Util.putFile(s3, bucket, key, size, inputStream);
             } catch (Exception e) {
@@ -260,21 +260,30 @@ public class ContractorController {
     @GetMapping("/{con_id}/files/{filename}")
     public ResponseEntity<byte[]> download(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "filename") String filename) throws IOException {
-        return Util.download(s3, bucket, conId + "/" + filename);
+        return Util.download(s3, bucket, getConFilePath(conId, filename));
     }
 
+//    @Transactional
+//    @DeleteMapping("/{con_id}/files/{filename}")
+//    public void deleteContractorFileByName(@PathVariable(name = "con_id") UUID conId,
+//                           @PathVariable(name = "filename") String filename) {
+//        contractorRepository.findById(conId).map(contractor -> {
+//            s3.deleteObject(bucket, getConFilePath(contractor.getId(), filename));
+//            List<ContractorFile> files = contractor.getContractorFiles().stream()
+//                    .filter(file -> file.getName().equals(filename))
+//                    .collect(Collectors.toList());
+//            files.forEach(f -> contractorFileRepository.deleteById(f.getId()));
+//            return contractor;
+//        }).orElseThrow(Util.notFound(conId, Contractor.class));
+//    }
+
     @Transactional
-    @DeleteMapping("/{con_id}/files/{filename}")
-    public void deleteContractorFile(@PathVariable(name = "con_id") UUID conId,
-                           @PathVariable(name = "filename") String filename) {
-        contractorRepository.findById(conId).map(contractor -> {
-            s3.deleteObject(bucket, contractor.getId() + "/" + filename);
-            List<ContractorFile> files = contractor.getContractorFiles().stream()
-                    .filter(file -> file.getName().equals(filename))
-                    .collect(Collectors.toList());
-            files.forEach(f -> contractorFileRepository.deleteById(f.getId()));
-            return contractor;
-        }).orElseThrow(Util.notFound(conId, Contractor.class));
+    @DeleteMapping("/{con_id}/files/{id}")
+    public void deleteContractorFileById(@PathVariable(name = "con_id") UUID conId,
+                                           @PathVariable(name = "id") UUID id) {
+        ContractorFile file = contractorFileRepository.findById(id).orElseThrow(Util.notFound(id, ContractorFile.class));
+        s3.deleteObject(bucket, getConFilePath(conId, file.getName()));
+        contractorFileRepository.delete(file);
     }
 
     @PostMapping("/{con_id}/specialties/{spec_id}")
@@ -336,5 +345,9 @@ public class ContractorController {
 
     public String like(String s) {
         return "%"+s+"%";
+    }
+
+    public String getConFilePath(UUID id, String filename) {
+        return id + "/" + filename;
     }
 }
