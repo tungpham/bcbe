@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -178,9 +179,13 @@ public class ContractorController {
     }
 
     @PostMapping("/files/{file_id}/note")
-    public ContractorFile addFileNote(@PathVariable(name = "file_id") UUID fileId, String note) {
+    public ContractorFile addFileNote(@PathVariable(name = "file_id") UUID fileId, @RequestBody String note) {
         return contractorFileRepository.findById(fileId).map(file -> {
-            file.setNote(note);
+            try {
+                file.setNote(URLEncoder.encode(note, StandardCharsets.UTF_8.toString()));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             return contractorFileRepository.save(file);
         }).orElseThrow(Util.notFound(fileId, ContractorFile.class));
     }
