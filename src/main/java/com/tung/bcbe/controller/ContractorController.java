@@ -177,6 +177,14 @@ public class ContractorController {
         return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.PICTURE);
     }
 
+    @PostMapping("/files/{file_id}/note")
+    public ContractorFile addFileNote(@PathVariable(name = "file_id") UUID fileId, String note) {
+        return contractorFileRepository.findById(fileId).map(file -> {
+            file.setNote(note);
+            return contractorFileRepository.save(file);
+        }).orElseThrow(Util.notFound(fileId, ContractorFile.class));
+    }
+
     @PostMapping("/{con_id}/files/upload/document")
     public void uploadDocument(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
         upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.DOCUMENT);
@@ -282,7 +290,7 @@ public class ContractorController {
     public void deleteContractorFileById(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "id") UUID id) {
         contractorFileRepository.findById(id).map(file -> {
-            s3.deleteObject(bucket, getConFilePath(conId, file.getName()));
+            s3.deleteObject(bucket, getConFilePath(file.getContractor().getId(), file.getName()));
             contractorFileRepository.delete(file);
             return file;
         }).orElseThrow(Util.notFound(id, ContractorFile.class));

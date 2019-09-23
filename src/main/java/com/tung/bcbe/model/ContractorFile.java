@@ -42,4 +42,7 @@ public class ContractorFile extends ID {
 
     @Enumerated(EnumType.STRING)
     private Type type;
+
+    @Column
+    private String note;
 }
