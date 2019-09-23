@@ -2,6 +2,7 @@ package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.dto.ContractorSearchFilter;
+import com.tung.bcbe.dto.GetContractorRatingResponse;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.ContractorFile;
@@ -52,6 +53,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -356,6 +358,25 @@ public class ContractorController {
         query.select(contractor).where(predicate);
 
         return entityManager.createQuery(query).getResultList();
+    }
+
+    @PostMapping("/{con_id}/request_reviews")
+    public void sendReviewRequest(@PathVariable(name = "con_id") UUID conId, @RequestBody String[] emails) {
+        Arrays.stream(emails).forEach(log::info);
+    }
+
+    @GetMapping("/{con_id}/get_reviews")
+    public GetContractorRatingResponse getContractorRating(@PathVariable(name = "con_id") UUID conId) {
+        GetContractorRatingResponse response = GetContractorRatingResponse.builder()
+                .oneStarRating(0)
+                .twoStarRating(0)
+                .threeStarRating(1)
+                .fourStarRating(4)
+                .fiveStarRating(5)
+                .reviews(10)
+                .build();
+
+        return response;
     }
 
     public String like(String s) {
