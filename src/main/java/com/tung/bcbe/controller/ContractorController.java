@@ -198,23 +198,42 @@ public class ContractorController {
     }
 
     @PostMapping("/{con_id}/link")
-    public void uploadLink(@PathVariable(name = "con_id") UUID conId, @RequestParam("url") String link) throws IOException {
+    public void addLink(@PathVariable(name = "con_id") UUID conId, @RequestParam("url") String link,
+                        @RequestParam(value = "type", defaultValue = "") String type) throws IOException {
         if (StringUtils.isBlank(link)) {
             return;
         }
         String encode = URLEncoder.encode(link, StandardCharsets.UTF_8.toString());
         contractorRepository.findById(conId).map(contractor -> {
+            if (StringUtils.isNotBlank(type)) {
+                List<ContractorFile> existing = getLinks(conId, type);
+                if (existing.size() != 0) {
+                    ContractorFile cf = existing.get(0);
+                    cf.setName(encode);
+                    return contractorFileRepository.save(cf);
+                }
+            }
+
             ContractorFile contractorFile = ContractorFile.builder()
                     .name(encode)
-                    .type(ContractorFile.Type.LINK)
+                    .type(StringUtils.isBlank(type) ? ContractorFile.Type.LINK : ContractorFile.Type.valueOf(type))
                     .contractor(contractor).build();
             return contractorFileRepository.save(contractorFile);
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
 
     @GetMapping("/{con_id}/link")
-    public List<ContractorFile> getLinks(@PathVariable(name = "con_id") UUID conId) {
-        return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.LINK);
+    public List<ContractorFile> getLinks(@PathVariable(name = "con_id") UUID conId,
+                                         @RequestParam(value = "type", defaultValue = "") String type) {
+        if (StringUtils.isBlank(type)) {
+            return contractorFileRepository.findContractorFileByContractorIdAndTypeIn(conId, Arrays.asList(
+                    ContractorFile.Type.LINK,
+                    ContractorFile.Type.FACEBOOK,
+                    ContractorFile.Type.INSTAGRAM,
+                    ContractorFile.Type.TWITTER));
+        } else {
+            return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.valueOf(type));
+        }
     }
 
     @PostMapping("/{con_id}/files/upload/avatar")
