@@ -2,6 +2,7 @@ package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.dto.ContractorSearchFilter;
+import com.tung.bcbe.dto.FileNoteDto;
 import com.tung.bcbe.dto.GetContractorRatingResponse;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
@@ -127,8 +128,7 @@ public class ContractorController {
     }
 
     @PostMapping("/{con_id}")
-    public Contractor edit(@PathVariable(name = "con_id") UUID genId,
-                                    @Valid @RequestBody Contractor genContractor) {
+    public Contractor edit(@PathVariable(name = "con_id") UUID genId, @Valid @RequestBody Contractor genContractor) {
         return contractorRepository.findById(genId).map(gen -> {
             Address existing = gen.getAddress();
             Address update = genContractor.getAddress();
@@ -159,20 +159,21 @@ public class ContractorController {
     @PostMapping("/{con_id}/files/upload")
     public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
                            @RequestParam("type") String type) throws IOException {
-        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.valueOf(type));
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.valueOf(type), null);
     }
 
     @PostMapping("/{con_id}/files/upload/multiple")
-    public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile[] files,
+    public void uploadMultipleFiles(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile[] files,
                            @RequestParam("type") String type) throws IOException {
         for (MultipartFile file : files) {
-            upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.valueOf(type));
+            upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.valueOf(type), null);
         }
     }
 
     @PostMapping("/{con_id}/files/upload/photo")
-    public void uploadPhoto(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
-        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.PICTURE);
+    public void uploadPhoto(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
+                            @RequestParam(value = "note", defaultValue = "") String note) throws IOException {
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.PICTURE, note);
     }
 
     @GetMapping("/{con_id}/photos")
@@ -181,10 +182,10 @@ public class ContractorController {
     }
 
     @PostMapping("/files/{file_id}/note")
-    public ContractorFile addFileNote(@PathVariable(name = "file_id") UUID fileId, @RequestBody String note) {
+    public ContractorFile addFileNote(@PathVariable(name = "file_id") UUID fileId, @RequestBody FileNoteDto data) {
         return contractorFileRepository.findById(fileId).map(file -> {
             try {
-                file.setNote(URLEncoder.encode(note, StandardCharsets.UTF_8.toString()));
+                file.setNote(URLEncoder.encode(data.getNote(), StandardCharsets.UTF_8.toString()));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -193,8 +194,15 @@ public class ContractorController {
     }
 
     @PostMapping("/{con_id}/files/upload/document")
-    public void uploadDocument(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file) throws IOException {
-        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.DOCUMENT);
+    public void uploadDocument(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
+                               @RequestParam(value = "note", defaultValue = "") String note) throws IOException {
+        upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(),
+                ContractorFile.Type.DOCUMENT, StringUtils.isBlank(note) ? null : note);
+    }
+
+    @GetMapping("/{con_id}/files/document")
+    public List<ContractorFile> getDocument(@PathVariable(name = "con_id") UUID conId) {
+        return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.DOCUMENT);
     }
 
     @PostMapping("/{con_id}/link")
@@ -258,7 +266,7 @@ public class ContractorController {
                 contractorFile -> deleteContractorFileById(conId, contractorFile.getId())
         );
 
-        upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.Type.AVATAR);
+        upload(conId, file.getOriginalFilename(), os.size(), is, ContractorFile.Type.AVATAR, null);
     }
 
     @GetMapping("/{con_id}/avatar")
@@ -275,12 +283,14 @@ public class ContractorController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    public void upload(UUID conId, String fileName, long size, InputStream inputStream, ContractorFile.Type type) {
+    private void upload(UUID conId, String fileName, long size, InputStream inputStream,
+                                  ContractorFile.Type type, String note) {
         contractorRepository.findById(conId).map(contractor -> {
             ContractorFile contractorFile = new ContractorFile();
             contractorFile.setContractor(contractor);
             contractorFile.setName(fileName);
             contractorFile.setType(type);
+            contractorFile.setNote(note);
             String key = getConFilePath(contractor.getId(), fileName);
             try {
                 Util.putFile(s3, bucket, key, size, inputStream);
