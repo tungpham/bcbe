@@ -188,7 +188,7 @@ public class ProjectController {
             if (project.getBudget() != null) {
                 prj.setBudget(project.getBudget());
             }
-            if (!DateUtils.isSameDay(project.getDue(), prj.getDue())) {
+            if (project.getDue() != null && !DateUtils.isSameDay(project.getDue(), prj.getDue())) {
                 prj.setDue(project.getDue());
             }
             return projectRepository.save(prj);
