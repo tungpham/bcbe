@@ -41,4 +41,7 @@ public class Address extends ID {
 
     @Column
     private String employees;
+
+    @Column
+    private String introduction;
 }

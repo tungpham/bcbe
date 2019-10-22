@@ -2,17 +2,23 @@ package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.dto.ContractorSearchFilter;
+import com.tung.bcbe.dto.ContractorSearchResultDto;
 import com.tung.bcbe.dto.FileNoteDto;
 import com.tung.bcbe.dto.GetContractorRatingResponse;
+import com.tung.bcbe.dto.ReviewSummary;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
+import com.tung.bcbe.model.ContractorFAQ;
 import com.tung.bcbe.model.ContractorFile;
 import com.tung.bcbe.model.ContractorSpecialty;
+import com.tung.bcbe.model.Review;
 import com.tung.bcbe.model.Specialty;
+import com.tung.bcbe.repository.ContractorFAQRepository;
 import com.tung.bcbe.repository.ContractorFileRepository;
 import com.tung.bcbe.repository.ContractorRepository;
 import com.tung.bcbe.repository.ContractorSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectRepository;
+import com.tung.bcbe.repository.ReviewRepository;
 import com.tung.bcbe.repository.SpecialtyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +60,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -81,6 +88,12 @@ public class ContractorController {
 
     @Autowired
     private ContractorFileRepository contractorFileRepository;
+
+    @Autowired
+    private ContractorFAQRepository contractorFAQRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @Autowired
     private AmazonS3 s3;
@@ -354,7 +367,7 @@ public class ContractorController {
     }
 
     @PostMapping("/search")
-    public List<Contractor> search(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
+    public List<ContractorSearchResultDto> search(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Contractor> query = cb.createQuery(Contractor.class);
         Root<Contractor> contractor = query.from(Contractor.class);
@@ -386,14 +399,46 @@ public class ContractorController {
 
         query.select(contractor).where(predicate);
 
-        return entityManager.createQuery(query).getResultList();
+        List<Contractor> result = entityManager.createQuery(query).getResultList();
+
+        return result.stream().map(c -> {
+            ContractorSearchResultDto dto = ContractorSearchResultDto.builder()
+                    .reviewSummary(getReviewAndRatingSummary())
+                    .contractor(c)
+                    .build();
+            return dto;
+        }).collect(Collectors.toList());
     }
 
+    /**
+     * TODO to be implemented
+     * @return
+     */
+    public ReviewSummary getReviewAndRatingSummary() {
+        return ReviewSummary.builder()
+                .aReview("Quick turnaround, great product and price, install was the best I’ve ever experienced. " +
+                        "I would recommend this company to anyone needing new flooring.")
+                .rating(4.8)
+                .totalReviews(10)
+                .build();
+    }
+
+    /**
+     * TODO to be implemented
+     * @param conId
+     * @param emails
+     */
     @PostMapping("/{con_id}/request_reviews")
     public void sendReviewRequest(@PathVariable(name = "con_id") UUID conId, @RequestBody String[] emails) {
         Arrays.stream(emails).forEach(log::info);
     }
 
+    /**
+     * TODO to be implemented
+     * Get summary rating
+     * @param conId
+     * @return
+     */
     @GetMapping("/{con_id}/get_reviews")
     public GetContractorRatingResponse getContractorRating(@PathVariable(name = "con_id") UUID conId) {
         GetContractorRatingResponse response = GetContractorRatingResponse.builder()
@@ -406,6 +451,82 @@ public class ContractorController {
                 .build();
 
         return response;
+    }
+
+    /**
+     * TODO to be implemented
+     * @param conId
+     * @param pageable
+     * @return
+     */
+    @GetMapping("/{con_id}/reviews")
+    public List<Review> getContractorReviews(@PathVariable(name = "con_id") UUID conId, Pageable pageable) {
+        final List<Review> list = new ArrayList<>();
+        contractorRepository.findById(conId).map(contractor -> {
+            list.add(Review.builder().contractor(contractor)
+                    .reviewer(Contractor.builder()
+                            .address(Address.builder().name("customer 1").build())
+                            .build())
+                    .review("extremely helpful and very responsive. I called in the morning requesting an estimate and he arrived later that day. I would highly recommend")
+                    .rating(4)
+                    .specialty("Flooring")
+                    .build());
+            list.add(Review.builder().contractor(contractor)
+                    .reviewer(Contractor.builder()
+                            .address(Address.builder().name("customer 2").build())
+                            .build())
+                    .review("not only was the first to respond (several did not respond), he had a guy out here within an hour to repair")
+                    .rating(4)
+                    .specialty("Flooring")
+                    .build());
+            list.add(Review.builder().contractor(contractor)
+                    .reviewer(Contractor.builder()
+                            .address(Address.builder().name("customer 3").build())
+                            .build())
+                    .review("They got the whole job done in one day and made sure to do everything I asked. Great job guys!")
+                    .rating(5)
+                    .build());
+            list.add(Review.builder().contractor(contractor)
+                    .reviewer(Contractor.builder()
+                            .address(Address.builder().name("customer 4").build())
+                            .build())
+                    .review(" got a little behind, but they ended up doing a quality job in the end at a very reasonable price.")
+                    .rating(4)
+                    .build());
+            list.add(Review.builder().contractor(contractor)
+                    .reviewer(Contractor.builder()
+                            .address(Address.builder().name("customer 5").build())
+                            .build())
+                    .review("I would be happy to revise this review if we are able to find a solution to our issue, but this was a botched job from the beginning")
+                    .rating(1)
+                    .specialty("Flooring")
+                    .build());
+            return list;
+        }).orElseThrow(Util.notFound(conId, Contractor.class));
+        return list;
+//        return reviewRepository.findAllById(conId, pageable);
+    }
+
+    @PostMapping("/reviews")
+    public void createReview(@RequestBody Review review) {
+        reviewRepository.save(review);
+    }
+
+    /**
+     * TODO to be implemented
+     * @param conId
+     * @param pageable
+     * @return
+     */
+    @GetMapping("/{con_id}/faq")
+    public List<ContractorFAQ> getFAQ(@PathVariable(name = "con_id") UUID conId, Pageable pageable) {
+        List<ContractorFAQ> list = new ArrayList<>();
+        list.add(ContractorFAQ.builder().question("Question 1").answer("Answer 1").build());
+        list.add(ContractorFAQ.builder().question("Question 2").answer("Answer 2").build());
+        list.add(ContractorFAQ.builder().question("Question 3").answer("Answer 3").build());
+        list.add(ContractorFAQ.builder().question("Question 4").answer("Answer 4").build());
+        return list;
+//        return contractorFAQRepository.findAllById(conId, pageable);
     }
 
     public String like(String s) {

@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS projectfile;
 DROP TABLE IF EXISTS contractorfile;
+DROP TABLE IF EXISTS contractor_review;
+DROP TABLE IF EXISTS contractor_faq;
 DROP TABLE IF EXISTS project_template;
 DROP TABLE IF EXISTS project_specialty;
 DROP TABLE IF EXISTS project_invite;
@@ -33,6 +35,7 @@ CREATE TABLE address (
     company varchar(100),
     founded varchar(4),
     employees varchar(1000),
+    introduction varchar(1000),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
@@ -185,6 +188,28 @@ CREATE TABLE contractor_specialty (
     con_id uuid references contractor,
     spec_id uuid references specialty,
     unique(con_id, spec_id),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE contractor_review (
+    id uuid primary key,
+    con_id uuid references contractor,
+    reviewer_id uuid references contractor,
+    review varchar(1000),
+    rating int,
+    specialty varchar(1000),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+CREATE TABLE contractor_faq (
+    id uuid primary key,
+    con_id uuid references contractor,
+    question varchar(1000),
+    answer varchar(1000),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)
