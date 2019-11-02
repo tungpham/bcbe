@@ -1,5 +1,6 @@
 package com.tung.bcbe.model;
 
+import com.tung.bcbe.dto.ReviewSummary;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,5 +53,7 @@ public class Contractor extends ID {
 
     @OneToMany(mappedBy = "contractor", fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<ContractorSpecialty> contractorSpecialties;
+
+    private transient ReviewSummary reviewSummary;
 }
 

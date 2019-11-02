@@ -125,12 +125,15 @@ public class ContractorController {
     }
 
     @GetMapping("/{con_id}")
-    public Optional<Contractor> get(@PathVariable(name = "con_id") UUID genId) {
+    public Optional<Contractor> getContractor(@PathVariable(name = "con_id") UUID genId) {
         return contractorRepository.findById(genId).map(contractor -> {
             Set<ContractorFile> files = contractor.getContractorFiles().stream()
                     .filter(file -> !ContractorFile.Type.AVATAR.equals(file.getType()))
                     .collect(Collectors.toSet());
             contractor.setContractorFiles(files);
+
+            //TODO implement this
+            contractor.setReviewSummary(getReviewAndRatingSummary());
             return contractor;
         });
     }
