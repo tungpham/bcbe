@@ -55,5 +55,15 @@ public class Contractor extends ID {
     private Set<ContractorSpecialty> contractorSpecialties;
 
     private transient ReviewSummary reviewSummary;
+
+    private transient int numberOfHires;
+
+    private transient boolean backgroundChecked;
+
+    private transient boolean licenseVerified;
+
+    private transient String businessHourFrom = "8:00 am";
+
+    private transient String businessHourTo = "9:00 pm";
 }
 
