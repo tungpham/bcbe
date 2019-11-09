@@ -65,5 +65,7 @@ public class Contractor extends ID {
     private transient String businessHourFrom = "8:00 am";
 
     private transient String businessHourTo = "9:00 pm";
+
+    private transient String[] paymentMethods = {"Cash", "Credit card"};
 }
 
