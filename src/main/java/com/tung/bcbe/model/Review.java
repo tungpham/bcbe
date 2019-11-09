@@ -39,4 +39,6 @@ public class Review extends ID {
 
     @Column
     private String specialty;
+
+    private String client;
 }
