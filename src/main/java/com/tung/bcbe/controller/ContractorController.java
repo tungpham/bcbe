@@ -20,6 +20,7 @@ import com.tung.bcbe.repository.ContractorSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ReviewRepository;
 import com.tung.bcbe.repository.SpecialtyRepository;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,7 +126,7 @@ public class ContractorController {
     }
 
     @GetMapping("/{con_id}")
-    public Optional<Contractor> getContractor(@PathVariable(name = "con_id") UUID genId) {
+    public Optional<Contractor> getContractorById(@PathVariable(name = "con_id") UUID genId) {
         return contractorRepository.findById(genId).map(contractor -> {
             Set<ContractorFile> files = contractor.getContractorFiles().stream()
                     .filter(file -> !ContractorFile.Type.AVATAR.equals(file.getType()))
@@ -144,7 +145,7 @@ public class ContractorController {
     }
 
     @PostMapping("/{con_id}")
-    public Contractor edit(@PathVariable(name = "con_id") UUID genId, @Valid @RequestBody Contractor genContractor) {
+    public Contractor editContractorById(@PathVariable(name = "con_id") UUID genId, @Valid @RequestBody Contractor genContractor) {
         return contractorRepository.findById(genId).map(gen -> {
             Address existing = gen.getAddress();
             Address update = genContractor.getAddress();
@@ -172,6 +173,7 @@ public class ContractorController {
         }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
 
+    @ApiOperation(value = "upload file related to contractor")
     @PostMapping("/{con_id}/files/upload")
     public void uploadFile(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
                            @RequestParam("type") String type) throws IOException {
@@ -186,29 +188,33 @@ public class ContractorController {
         }
     }
 
+    @ApiOperation(value = "Convenient method to upload photos (in Photos and Video section) related to contractor")
     @PostMapping("/{con_id}/files/upload/photo")
     public void uploadPhoto(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
                             @RequestParam(value = "note", defaultValue = "") String note) throws IOException {
         upload(conId, file.getOriginalFilename(), file.getSize(), file.getInputStream(), ContractorFile.Type.PICTURE, note);
     }
 
+    @ApiOperation(value = "Convenient method to get contractor's files of type PICTURE")
     @GetMapping("/{con_id}/photos")
     public List<ContractorFile> getPhotos(@PathVariable(name = "con_id") UUID conId) {
         return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.PICTURE);
     }
 
+    @ApiOperation(value = "add note to a file")
     @PostMapping("/files/{file_id}/note")
     public ContractorFile addFileNote(@PathVariable(name = "file_id") UUID fileId, @RequestBody FileNoteDto data) {
         return contractorFileRepository.findById(fileId).map(file -> {
             try {
                 file.setNote(URLEncoder.encode(data.getNote(), StandardCharsets.UTF_8.toString()));
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                log.error("Fail to add note to file {}", fileId, e);
             }
             return contractorFileRepository.save(file);
         }).orElseThrow(Util.notFound(fileId, ContractorFile.class));
     }
 
+    @ApiOperation(value = "Convenient method to upload contractor document, such as licenses and permit")
     @PostMapping("/{con_id}/files/upload/document")
     public void uploadDocument(@PathVariable(name = "con_id") UUID conId, @RequestParam("file") MultipartFile file,
                                @RequestParam(value = "note", defaultValue = "") String note) throws IOException {
@@ -216,8 +222,9 @@ public class ContractorController {
                 ContractorFile.Type.DOCUMENT, StringUtils.isBlank(note) ? null : note);
     }
 
+    @ApiOperation(value = "Convenient method to retrieve contractor's files of type DOCUMENT")
     @GetMapping("/{con_id}/files/document")
-    public List<ContractorFile> getDocument(@PathVariable(name = "con_id") UUID conId) {
+    public List<ContractorFile> getDocuments(@PathVariable(name = "con_id") UUID conId) {
         return contractorFileRepository.findContractorFileByContractorIdAndType(conId, ContractorFile.Type.DOCUMENT);
     }
 
@@ -246,6 +253,7 @@ public class ContractorController {
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
 
+    @ApiOperation(value = "Convenient api to retrieve all contractor links, ie. facebook/twitter/instagram and video url")
     @GetMapping("/{con_id}/link")
     public List<ContractorFile> getLinks(@PathVariable(name = "con_id") UUID conId,
                                          @RequestParam(value = "type", defaultValue = "") String type) {
@@ -317,10 +325,27 @@ public class ContractorController {
         }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
 
+    @ApiOperation(value = "get contractor's files by file name", notes = "Contractors files are license's images, " +
+            "photos, videos, etc.")
     @GetMapping("/{con_id}/files/{filename}")
-    public ResponseEntity<byte[]> download(@PathVariable(name = "con_id") UUID conId,
+    public ResponseEntity<byte[]> getContractorFileByFileName(@PathVariable(name = "con_id") UUID conId,
                                            @PathVariable(name = "filename") String filename) throws IOException {
         return Util.download(s3, bucket, getConFilePath(conId, filename));
+    }
+
+    @ApiOperation(value = "get contractor's files by file id", notes = "Contractors files are license's images, " +
+            "photos, videos, etc.")
+    @GetMapping("/{con_id}/files/{fileId}")
+    public ResponseEntity<byte[]> getContractorFileByFileId(@PathVariable(name = "con_id") UUID conId,
+                                                              @PathVariable(name = "fileId") UUID fileId) {
+        return contractorFileRepository.findById(fileId).map(file -> {
+            try {
+                return Util.download(s3, bucket, getConFilePath(conId, file.getName()));
+            } catch (IOException e) {
+                log.error("Failed to get file {}", fileId, e);
+            }
+            return null;
+        }).orElseThrow(Util.notFound(fileId, ContractorFile.class));
     }
 
 //    @Transactional
@@ -369,6 +394,8 @@ public class ContractorController {
         contractorSpecialtyRepository.deleteContractorSpecialtiesByContractorIdAndSpecialtyId(conId, specId);
     }
 
+    @ApiOperation(value = "Search contractors by location and by specialty",
+            notes = "Specialty is the literal value like Cleaning, Flooring")
     @PostMapping("/search")
     public List<ContractorSearchResultDto> search(@RequestBody ContractorSearchFilter filter, Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -442,6 +469,7 @@ public class ContractorController {
      * @param conId
      * @return
      */
+    @ApiOperation(value = "Get contractor summary rating - # of 1 star ratings, # of 2 stars rating, etc.")
     @GetMapping("/{con_id}/get_reviews")
     public GetContractorRatingResponse getContractorRating(@PathVariable(name = "con_id") UUID conId) {
         GetContractorRatingResponse response = GetContractorRatingResponse.builder()
@@ -462,6 +490,7 @@ public class ContractorController {
      * @param pageable
      * @return
      */
+    @ApiOperation(value = "Get list of reviews for this contractor")
     @GetMapping("/{con_id}/reviews")
     public List<Review> getContractorReviews(@PathVariable(name = "con_id") UUID conId, Pageable pageable) {
         final List<Review> list = new ArrayList<>();

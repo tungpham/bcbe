@@ -21,6 +21,7 @@ import com.tung.bcbe.repository.ProjectSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
 import com.tung.bcbe.repository.SpecialtyRepository;
 import com.tung.bcbe.repository.TemplateRepository;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,7 @@ public class ProjectController {
      * @param project
      * @return
      */
+    @ApiOperation(value = "Create a new project for an owner")
     @PostMapping("/contractors/{gen_id}/projects")
     public Project createProject(@PathVariable(value = "gen_id") UUID genId,
                                  @Valid @RequestBody Project project) {
@@ -105,6 +107,7 @@ public class ProjectController {
      * @param pastProject
      * @return
      */
+    @ApiOperation(value = "Create a past project for a contractor. It's used when contractor add past project in their profile")
     @PostMapping("/contractors/{gen_id}/projects/past")
     public Project createPastProject(@PathVariable(value = "gen_id") UUID genId,
                                      @Valid @RequestBody PastProject pastProject) {
@@ -120,6 +123,7 @@ public class ProjectController {
      * @param genId
      * @return
      */
+    @ApiOperation(value = "Get all contractor past projects")
     @GetMapping("/contractors/{gen_id}/projects/past")
     public Page<Project> getPastProjects(@PathVariable(value = "gen_id") UUID genId, Pageable pageable) {
         Page<Project> page = projectRepository.findByGenContractorIdAndType(genId, Project.Type.SUBCON_PROJECT, pageable);
