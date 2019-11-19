@@ -34,6 +34,10 @@ public class Project extends ID {
         ARCHIVED
     }
 
+    /*
+    OWNER_PROJECT is regular project created by owner
+    SUBCON_PROJECT is the past project created by contractor in their Profile
+     */
     public enum Type {
         OWNER_PROJECT,
         SUBCON_PROJECT

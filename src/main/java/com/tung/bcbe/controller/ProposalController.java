@@ -18,6 +18,8 @@ import com.tung.bcbe.repository.ProjectTemplateRepository;
 import com.tung.bcbe.repository.ProposalFileRepository;
 import com.tung.bcbe.repository.ProposalOptionRepository;
 import com.tung.bcbe.repository.ProposalRepository;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,22 +62,22 @@ public class ProposalController {
 
     @Autowired
     private ProposalRepository proposalRepository;
-    
+
     @Autowired
     private CategoryRepository categoryRepository;
-    
+
     @Autowired
     private OptionRepository optionRepository;
-    
+
     @Autowired
     private ProposalOptionRepository proposalOptionRepository;
-    
+
     @Autowired
     private ProjectTemplateRepository projectTemplateRepository;
 
     @Autowired
     private MessageRepository messageRepository;
-    
+
     @Autowired
     private ProposalFileRepository proposalFileRepository;
 
@@ -84,7 +86,7 @@ public class ProposalController {
 
     @Value("${S3_BUCKET_PROPOSAL}")
     private String bucket;
-    
+
     @PostMapping("/contractors/{sub_id}/projects/{project_id}/proposals")
     public Proposal createProposal(@PathVariable(value = "sub_id") UUID subId,
                                    @PathVariable(value = "project_id") UUID projectId,
@@ -114,27 +116,28 @@ public class ProposalController {
         if (status == null) {
             return proposalRepository.findByProjectId(projectId, pageable);
         } else {
-            return proposalRepository.findByProjectIdAndStatus(projectId, status, pageable);    
-        }         
+            return proposalRepository.findByProjectIdAndStatus(projectId, status, pageable);
+        }
     }
 
+    @ApiOperation(value = "Get all proposals submitted by the contractor")
     @GetMapping("/contractors/{sub_id}/proposals")
-    public Page<Proposal> getProposalsBySubContractorId(@PathVariable(value = "sub_id") UUID subId, 
-                                                        @RequestParam(value = "status", required = false) Proposal.STATUS status, 
+    public Page<Proposal> getProposalsBySubContractorId(@ApiParam(value = "contractor id") @PathVariable(value = "sub_id") UUID subId,
+                                                        @RequestParam(value = "status", required = false) Proposal.STATUS status,
                                                         Pageable pageable) {
         if (status == null)
             return proposalRepository.findBySubContractorId(subId, pageable);
         else
             return proposalRepository.findBySubContractorIdAndStatus(subId, status, pageable);
     }
-    
+
     @GetMapping("/proposals/{proposal_id}")
     public Proposal getProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
         return proposalRepository.findById(proposalId).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
 
     @PutMapping("/proposals/{proposal_id}")
-    public Proposal editProposal(@PathVariable(value = "proposal_id") UUID proposalId, 
+    public Proposal editProposal(@PathVariable(value = "proposal_id") UUID proposalId,
                                  @RequestBody @Valid Proposal proposal) {
         return proposalRepository.findById(proposalId).map(current -> {
             if (proposal.getDescription() != null) {
@@ -152,19 +155,19 @@ public class ProposalController {
             return proposalRepository.save(current);
         }).orElseThrow(Util.notFound(proposalId, Proposal.class));
     }
-    
+
     @Transactional
     @DeleteMapping("/proposals/{proposal_id}")
     public void deleteProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
         messageRepository.deleteByProposalId(proposalId);
         proposalRepository.deleteById(proposalId);
     }
-    
+
     @PostMapping("/proposals/{prop_id}/categories/{cat_id}/options")
-    public ProposalOption addProposalOption(@PathVariable(value = "prop_id") UUID propId, 
-                                            @PathVariable(value = "cat_id") UUID catId, 
+    public ProposalOption addProposalOption(@PathVariable(value = "prop_id") UUID propId,
+                                            @PathVariable(value = "cat_id") UUID catId,
                                             @RequestBody @Valid ProposalOption proposalOption) {
-        return proposalRepository.findById(propId).map(proposal -> 
+        return proposalRepository.findById(propId).map(proposal ->
             categoryRepository.findById(catId).map(category -> {
                 proposalOption.setCategory(category);
                 proposalOption.setProposal(proposal);
@@ -172,18 +175,18 @@ public class ProposalController {
             }).orElseThrow(Util.notFound(catId, Category.class))
         ).orElseThrow(Util.notFound(propId, Proposal.class));
     }
-    
+
     @GetMapping("/proposals/{prop_id}/categories/{cat_id}")
     public Page<ProposalOption> getProposalOptionByCategory(@PathVariable(value = "prop_id") UUID propId,
                                                   @PathVariable(value = "cat_id") UUID catId, Pageable pageable) {
         return proposalOptionRepository.findByProposalIdAndCategoryId(propId, catId, pageable);
     }
-    
+
     @GetMapping("/proposals/options/{opt_id}")
     public ProposalOption getProposalOption(@PathVariable(value = "opt_id") UUID optId) {
         return proposalOptionRepository.findById(optId).orElseThrow(Util.notFound(optId, ProposalOption.class));
     }
-    
+
     @PutMapping("/proposals/options/{opt_id}")
     public ProposalOption editProposalOption(@PathVariable(value = "opt_id") UUID optId,
                                    @RequestBody @Valid ProposalOption proposalOption) {

@@ -224,6 +224,7 @@ create table proposal_option (
     value varchar(1000),
     budget numeric(10, 2),
     duration numeric(10,2),
+    type varchar(50),
     unique(name),
     created_at timestamp not null,
     updated_at timestamp not null,
