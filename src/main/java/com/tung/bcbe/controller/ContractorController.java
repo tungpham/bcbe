@@ -335,17 +335,17 @@ public class ContractorController {
 
     @ApiOperation(value = "get contractor's files by file id", notes = "Contractors files are license's images, " +
             "photos, videos, etc.")
-    @GetMapping("/{con_id}/files/{fileId}")
+    @GetMapping("/{con_id}/files")
     public ResponseEntity<byte[]> getContractorFileByFileId(@PathVariable(name = "con_id") UUID conId,
-                                                              @PathVariable(name = "fileId") UUID fileId) {
-        return contractorFileRepository.findById(fileId).map(file -> {
+                                                            @RequestParam UUID id) {
+        return contractorFileRepository.findById(id).map(file -> {
             try {
                 return Util.download(s3, bucket, getConFilePath(conId, file.getName()));
             } catch (IOException e) {
-                log.error("Failed to get file {}", fileId, e);
+                log.error("Failed to get file {}", id, e);
             }
             return null;
-        }).orElseThrow(Util.notFound(fileId, ContractorFile.class));
+        }).orElseThrow(Util.notFound(id, ContractorFile.class));
     }
 
 //    @Transactional
