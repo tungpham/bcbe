@@ -17,7 +17,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
@@ -64,6 +66,11 @@ public class Project extends ID {
 
     @Column
     private Integer duration;
+
+    //TODO calculate these dates
+    private transient Date startDate = new GregorianCalendar(2019, Calendar.FEBRUARY, 11).getTime();
+    private transient Date endDate = new GregorianCalendar(2019, Calendar.DECEMBER, 31).getTime();
+    private transient String city = "Ha Noi";
 
     /**
      * This is used for sub contractor to add past project, so we know what year the project was completed.
