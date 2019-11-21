@@ -31,6 +31,7 @@ public class Project extends ID {
 
     public enum Status {
         ACTIVE,
+        ONGOING,
         ARCHIVED
     }
 

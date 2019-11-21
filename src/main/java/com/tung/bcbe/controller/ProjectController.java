@@ -2,6 +2,8 @@ package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.dto.PastProject;
+import com.tung.bcbe.dto.ProjectDTO;
+import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
@@ -19,6 +21,7 @@ import com.tung.bcbe.repository.ProjectRelationshipRepository;
 import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProjectSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectTemplateRepository;
+import com.tung.bcbe.repository.ProposalRepository;
 import com.tung.bcbe.repository.SpecialtyRepository;
 import com.tung.bcbe.repository.TemplateRepository;
 import io.swagger.annotations.ApiOperation;
@@ -80,6 +83,9 @@ public class ProjectController {
 
     @Autowired
     private ProjectRelationshipRepository projectRelationshipRepository;
+
+    @Autowired
+    private ProposalRepository proposalRepository;
 
     @Autowired
     private AmazonS3 s3;
@@ -162,11 +168,32 @@ public class ProjectController {
      * @return
      */
     @GetMapping("/contractors/{gen_id}/projects")
-    public Page<Project> getProjectsByGenContractor(
+    public Page<ProjectDTO> getProjectsByGenContractor(
             @PathVariable(value = "gen_id") UUID genId,
             @RequestParam(name = "status", defaultValue = "ACTIVE") Project.Status status,
             Pageable pageable) {
-        return projectRepository.findByGenContractorIdAndStatus(genId, status, pageable);
+        List<Project> projects = projectRepository.findByGenContractorIdAndStatus(genId, status, pageable).getContent();
+        List<ProjectDTO> newProjects = projects.stream()
+                .map(project -> {
+                    project.setGenContractor(null);
+                    ProjectDTO dto = ProjectDTO.builder().build();
+                    switch (status) {
+                        case ACTIVE:
+                            Page<Proposal> proposals = proposalRepository.findByProjectId(project.getId(), null);
+                            dto.setNumberOfBids(proposals.getTotalPages());
+                            break;
+                        case ONGOING:
+                            dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
+                            break;
+                        case ARCHIVED:
+                            dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
+                            break;
+                    }
+                    dto.setProject(project);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return new PageImpl<>(newProjects);
     }
 
     @GetMapping("/projects/{project_id}")
