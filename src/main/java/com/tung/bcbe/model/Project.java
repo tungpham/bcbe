@@ -17,9 +17,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.Calendar;
+import java.time.LocalDate;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Set;
 
 @RequiredArgsConstructor(onConstructor = @__(@PersistenceConstructor))
@@ -68,8 +67,8 @@ public class Project extends ID {
     private Integer duration;
 
     //TODO calculate these dates
-    private transient Date startDate = new GregorianCalendar(2019, Calendar.FEBRUARY, 11).getTime();
-    private transient Date endDate = new GregorianCalendar(2019, Calendar.DECEMBER, 31).getTime();
+    private transient LocalDate startDate = LocalDate.of(2019, 3, 11);
+    private transient LocalDate endDate = LocalDate.of(2019, 12, 31);
     private transient String city = "Ha Noi";
 
     /**
