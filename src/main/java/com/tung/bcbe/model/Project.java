@@ -1,5 +1,6 @@
 package com.tung.bcbe.model;
 
+import com.tung.bcbe.controller.Util;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Set;
 
@@ -57,6 +58,9 @@ public class Project extends ID {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    /*
+    due date to submit bid
+     */
     @Column
     private Date due;
 
@@ -67,9 +71,11 @@ public class Project extends ID {
     private Integer duration;
 
     //TODO calculate these dates
-    private transient LocalDate startDate = LocalDate.of(2019, 3, 11);
-    private transient LocalDate endDate = LocalDate.of(2019, 12, 31);
+    private transient String startDate = LocalDateTime.of(2019, 3, 11, 13, 10, 10).format(Util.formatter);
+    private transient String endDate = LocalDateTime.of(2019, 12, 31, 11, 13, 10).format(Util.formatter);
     private transient String city = "Ha Noi";
+
+    private transient String submittedDate;
 
     /**
      * This is used for sub contractor to add past project, so we know what year the project was completed.

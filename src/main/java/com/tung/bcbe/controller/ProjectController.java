@@ -175,7 +175,7 @@ public class ProjectController {
         List<Project> projects = projectRepository.findByGenContractorIdAndStatus(genId, status, pageable).getContent();
         List<ProjectDTO> newProjects = projects.stream()
                 .map(project -> {
-                    project.setGenContractor(null);
+                    project.setGenContractor(null); // clear out owner info
                     ProjectDTO dto = ProjectDTO.builder().build();
                     switch (status) {
                         case ACTIVE:
@@ -189,6 +189,7 @@ public class ProjectController {
                             dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
                             break;
                     }
+                    project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
                     dto.setProject(project);
                     return dto;
                 })
