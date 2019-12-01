@@ -359,7 +359,7 @@ public class ProjectController {
     public Page<Project> findProjectInviteForSubContractor(@PathVariable(value = "sub_id") UUID subId, Pageable pageable) {
         Page<ProjectInvite> page = projectInviteRepository.findBySubContractorId(subId, pageable);
         List<Project> content = page.stream().map(ProjectInvite::getProject).collect(Collectors.toList());
-        PageImpl<Project> projects = new PageImpl<Project>(content, pageable, page.getTotalElements());
+        PageImpl<Project> projects = new PageImpl<>(content, pageable, page.getTotalElements());
         return projects;
     }
 
