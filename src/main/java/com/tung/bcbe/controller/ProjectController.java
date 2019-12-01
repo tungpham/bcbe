@@ -172,7 +172,8 @@ public class ProjectController {
             @PathVariable(value = "gen_id") UUID genId,
             @RequestParam(name = "status", defaultValue = "ACTIVE") Project.Status status,
             Pageable pageable) {
-        List<Project> projects = projectRepository.findByGenContractorIdAndStatus(genId, status, pageable).getContent();
+        Page<Project> page = projectRepository.findByGenContractorIdAndStatus(genId, status, pageable);
+        List<Project> projects = page.getContent();
         List<ProjectDTO> newProjects = projects.stream()
                 .map(project -> {
                     project.setGenContractor(null); // clear out owner info
@@ -194,7 +195,7 @@ public class ProjectController {
                     return dto;
                 })
                 .collect(Collectors.toList());
-        return new PageImpl<>(newProjects);
+        return new PageImpl<>(newProjects, pageable, page.getTotalElements());
     }
 
     @GetMapping("/projects/{project_id}")
