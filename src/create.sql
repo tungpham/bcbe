@@ -36,6 +36,7 @@ CREATE TABLE address (
     founded varchar(4),
     employees varchar(1000),
     introduction varchar(1000),
+    receiveleads boolean default false,
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50)

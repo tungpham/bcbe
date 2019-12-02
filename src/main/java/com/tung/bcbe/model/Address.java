@@ -44,4 +44,7 @@ public class Address extends ID {
 
     @Column
     private String introduction;
+
+    @Column
+    private boolean receiveleads;
 }
