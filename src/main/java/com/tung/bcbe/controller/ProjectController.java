@@ -48,7 +48,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -207,6 +210,21 @@ public class ProjectController {
             Address address = project.getGenContractor().getAddress();
             project.setGenContractor(Contractor.builder().address(address).build()); //clear out owner info except for address
             project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
+
+            //TODO remove this fake data
+            Set<ProjectSpecialty> specialties = new HashSet<>();
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Home Design").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Roofing").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Carpet Cleaning Service").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Plumbing & Sewage").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Design & Creative").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Engineering & Architecture").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Restaurant Remodel").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Lighting Design").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Landscape Contractors").build()).build());
+            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Fencing Contractor").build()).build());
+            project.setProjectSpecialties(specialties);
+
             ProjectDTO dto = ProjectDTO.builder().build();
             dto.setProject(project);
 
