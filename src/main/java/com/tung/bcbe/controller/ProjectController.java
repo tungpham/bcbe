@@ -204,7 +204,8 @@ public class ProjectController {
         Page<Project> page = projectRepository.findAllByStatus(Project.Status.ACTIVE, pageable);
         List<Project> projects = page.getContent();
         List<ProjectDTO> jobs = projects.stream().map(project -> {
-            project.setGenContractor(null); //clear out owner info
+            Address address = project.getGenContractor().getAddress();
+            project.setGenContractor(Contractor.builder().address(address).build()); //clear out owner info except for address
             project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
             ProjectDTO dto = ProjectDTO.builder().build();
             dto.setProject(project);
