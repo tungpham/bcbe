@@ -198,6 +198,26 @@ public class ProjectController {
         return new PageImpl<>(newProjects, pageable, page.getTotalElements());
     }
 
+    @ApiOperation(value = "get available jobs based on contractor specialties")
+    @GetMapping("/projects/available")
+    public Page<ProjectDTO> getJobs(Pageable pageable) {
+        Page<Project> page = projectRepository.findAllByStatus(Project.Status.ACTIVE, pageable);
+        List<Project> projects = page.getContent();
+        List<ProjectDTO> jobs = projects.stream().map(project -> {
+            project.setGenContractor(null); //clear out owner info
+            project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
+            ProjectDTO dto = ProjectDTO.builder().build();
+            dto.setProject(project);
+
+            Page<Proposal> proposals = proposalRepository.findByProjectId(project.getId(), null);
+            dto.setNumberOfBids(proposals.getTotalPages());
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(jobs, pageable, page.getTotalElements());
+    }
+
     @GetMapping("/projects/{project_id}")
     public Project getProjectById(@PathVariable(value = "project_id") UUID projectId) {
         return projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId, Project.class));
