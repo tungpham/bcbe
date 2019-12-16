@@ -10,5 +10,9 @@ import lombok.Data;
 public class ProjectDTO {
     private Project project;
     private int numberOfBids;
+
+    /*
+    in case the project is in ONGOING or ARCHIVED status, contractor is the contractor working on the project
+     */
     private Contractor contractor;
 }

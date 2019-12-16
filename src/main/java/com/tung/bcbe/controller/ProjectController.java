@@ -213,16 +213,37 @@ public class ProjectController {
 
             //TODO remove this fake data
             Set<ProjectSpecialty> specialties = new HashSet<>();
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Home Design").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Roofing").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Carpet Cleaning Service").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Plumbing & Sewage").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Design & Creative").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Engineering & Architecture").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Restaurant Remodel").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Lighting Design").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Landscape Contractors").build()).build());
-            specialties.add(ProjectSpecialty.builder().specialty(Specialty.builder().name("Fencing Contractor").build()).build());
+            ProjectSpecialty ps1 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Home Design").build()).build();
+            ps1.setId(UUID.randomUUID());
+            specialties.add(ps1);
+            ProjectSpecialty ps2 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Roofing").build()).build();
+            ps2.setId(UUID.randomUUID());
+            specialties.add(ps2);
+            ProjectSpecialty ps3 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Carpet Cleaning Service").build()).build();
+            ps3.setId(UUID.randomUUID());
+            specialties.add(ps3);
+            ProjectSpecialty ps4 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Plumbing & Sewage").build()).build();
+            ps4.setId(UUID.randomUUID());
+            specialties.add(ps4);
+            ProjectSpecialty ps5 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Design & Creative").build()).build();
+            ps5.setId(UUID.randomUUID());
+            specialties.add(ps5);
+            ProjectSpecialty ps6 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Engineering & Architecture").build()).build();
+            ps6.setId(UUID.randomUUID());
+            specialties.add(ps6);
+            ProjectSpecialty ps7 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Restaurant Remodel").build()).build();
+            ps7.setId(UUID.randomUUID());
+            specialties.add(ps7);
+            ProjectSpecialty ps8 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Lighting Design").build()).build();
+            ps8.setId(UUID.randomUUID());
+            specialties.add(ps8);
+            ProjectSpecialty ps9 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Landscape Contractors").build()).build();
+            ps9.setId(UUID.randomUUID());
+            specialties.add(ps9);
+            ProjectSpecialty ps10 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Fencing Contractor").build()).build();
+            ps10.setId(UUID.randomUUID());
+            specialties.add(ps10);
+            
             project.setProjectSpecialties(specialties);
 
             ProjectDTO dto = ProjectDTO.builder().build();
