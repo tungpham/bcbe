@@ -45,10 +45,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +99,9 @@ public class ProjectController {
     @Value("${S3_BUCKET}")
     private String bucket;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     /**
      * User create new project. The project will have status ACTIVE and type of OWNER_PROJECT
      * @param genId
@@ -141,6 +147,7 @@ public class ProjectController {
     }
 
     public Project createProject(UUID genId, Project project, Project.Status status, Project.Type type) {
+        Contractor con = contractorRepository.findById(genId).get();
         return contractorRepository.findById(genId).map(genContractor -> {
             project.setGenContractor(genContractor);
             project.setStatus(status);
@@ -203,8 +210,17 @@ public class ProjectController {
 
     @ApiOperation(value = "get available jobs based on contractor specialties")
     @GetMapping("/projects/available")
-    public Page<ProjectDTO> getJobs(Pageable pageable) {
-        Page<Project> page = projectRepository.findAllByStatus(Project.Status.ACTIVE, pageable);
+    public Page<ProjectDTO> getJobs(@RequestParam(required = false) UUID[] specialty, Pageable pageable) {
+        Page<Project> page;
+        if (specialty != null && specialty.length > 0) {
+            List<Specialty> sp = specialtyRepository.findAllById(Arrays.asList(specialty));
+            Page<ProjectSpecialty> ps = projectSpecialtyRepository.findBySpecialtyIn(sp, pageable);
+            page = new PageImpl<>(ps.getContent().stream().map(ProjectSpecialty::getProject).collect(Collectors.toList()),
+                    pageable, ps.getTotalElements());
+        } else {
+            page = projectRepository.findAllByStatus(Project.Status.ACTIVE, pageable);
+        }
+
         List<Project> projects = page.getContent();
         List<ProjectDTO> jobs = projects.stream().map(project -> {
             Address address = project.getGenContractor().getAddress();
@@ -212,39 +228,41 @@ public class ProjectController {
             project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
 
             //TODO remove this fake data
-            Set<ProjectSpecialty> specialties = new HashSet<>();
-            ProjectSpecialty ps1 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Home Design").build()).build();
-            ps1.setId(UUID.randomUUID());
-            specialties.add(ps1);
-            ProjectSpecialty ps2 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Roofing").build()).build();
-            ps2.setId(UUID.randomUUID());
-            specialties.add(ps2);
-            ProjectSpecialty ps3 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Carpet Cleaning Service").build()).build();
-            ps3.setId(UUID.randomUUID());
-            specialties.add(ps3);
-            ProjectSpecialty ps4 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Plumbing & Sewage").build()).build();
-            ps4.setId(UUID.randomUUID());
-            specialties.add(ps4);
-            ProjectSpecialty ps5 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Design & Creative").build()).build();
-            ps5.setId(UUID.randomUUID());
-            specialties.add(ps5);
-            ProjectSpecialty ps6 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Engineering & Architecture").build()).build();
-            ps6.setId(UUID.randomUUID());
-            specialties.add(ps6);
-            ProjectSpecialty ps7 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Restaurant Remodel").build()).build();
-            ps7.setId(UUID.randomUUID());
-            specialties.add(ps7);
-            ProjectSpecialty ps8 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Lighting Design").build()).build();
-            ps8.setId(UUID.randomUUID());
-            specialties.add(ps8);
-            ProjectSpecialty ps9 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Landscape Contractors").build()).build();
-            ps9.setId(UUID.randomUUID());
-            specialties.add(ps9);
-            ProjectSpecialty ps10 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Fencing Contractor").build()).build();
-            ps10.setId(UUID.randomUUID());
-            specialties.add(ps10);
-            
-            project.setProjectSpecialties(specialties);
+            if (specialty == null) {
+                Set<ProjectSpecialty> specialties = new HashSet<>();
+                ProjectSpecialty ps1 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Home Design").build()).build();
+                ps1.setId(UUID.randomUUID());
+                specialties.add(ps1);
+                ProjectSpecialty ps2 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Roofing").build()).build();
+                ps2.setId(UUID.randomUUID());
+                specialties.add(ps2);
+                ProjectSpecialty ps3 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Carpet Cleaning Service").build()).build();
+                ps3.setId(UUID.randomUUID());
+                specialties.add(ps3);
+                ProjectSpecialty ps4 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Plumbing & Sewage").build()).build();
+                ps4.setId(UUID.randomUUID());
+                specialties.add(ps4);
+                ProjectSpecialty ps5 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Design & Creative").build()).build();
+                ps5.setId(UUID.randomUUID());
+                specialties.add(ps5);
+                ProjectSpecialty ps6 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Engineering & Architecture").build()).build();
+                ps6.setId(UUID.randomUUID());
+                specialties.add(ps6);
+                ProjectSpecialty ps7 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Restaurant Remodel").build()).build();
+                ps7.setId(UUID.randomUUID());
+                specialties.add(ps7);
+                ProjectSpecialty ps8 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Lighting Design").build()).build();
+                ps8.setId(UUID.randomUUID());
+                specialties.add(ps8);
+                ProjectSpecialty ps9 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Landscape Contractors").build()).build();
+                ps9.setId(UUID.randomUUID());
+                specialties.add(ps9);
+                ProjectSpecialty ps10 = ProjectSpecialty.builder().specialty(Specialty.builder().name("Fencing Contractor").build()).build();
+                ps10.setId(UUID.randomUUID());
+                specialties.add(ps10);
+
+                project.setProjectSpecialties(specialties);
+            }
 
             ProjectDTO dto = ProjectDTO.builder().build();
             dto.setProject(project);
