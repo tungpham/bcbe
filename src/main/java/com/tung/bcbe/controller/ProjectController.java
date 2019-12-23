@@ -268,7 +268,7 @@ public class ProjectController {
             dto.setProject(project);
 
             Page<Proposal> proposals = proposalRepository.findByProjectId(project.getId(), null);
-            dto.setNumberOfBids(proposals.getTotalPages());
+            dto.setNumberOfBids((int) proposals.getTotalElements());
 
             return dto;
         }).collect(Collectors.toList());
