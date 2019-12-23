@@ -33,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -224,6 +225,9 @@ public class ProjectController {
         List<Project> projects = page.getContent();
         List<ProjectDTO> jobs = projects.stream().map(project -> {
             Address address = project.getGenContractor().getAddress();
+            if (StringUtils.isEmpty(address.getName())) {
+                address.setName("Some Owner");
+            }
             project.setGenContractor(Contractor.builder().address(address).build()); //clear out owner info except for address
             project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
 
