@@ -9,5 +9,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface SpecialtyRepository extends PagingAndSortingRepository<Specialty, UUID> {
-    List<Specialty> findAllById(List<UUID> uuids);
+    List<Specialty> findByIdIn(List<UUID> uuids);
 }

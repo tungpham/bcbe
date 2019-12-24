@@ -13,5 +13,4 @@ public interface ProjectRepository extends PagingAndSortingRepository<Project, U
     Page<Project> findByGenContractorIdAndStatus(UUID genId, Project.Status status, Pageable pageable);
     Page<Project> findAllByStatus(Project.Status status, Pageable pageable);
     Page<Project> findByGenContractorIdAndType(UUID genId, Project.Type type, Pageable pageable);
-//    Page<Project> findProjectsByProjectSpecialties(UUID[] uuids, Pageable pageable);
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface ProjectSpecialtyRepository extends PagingAndSortingRepository<ProjectSpecialty, UUID> {
