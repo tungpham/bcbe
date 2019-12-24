@@ -225,6 +225,9 @@ public class ProjectController {
         List<Project> projects = page.getContent();
         List<ProjectDTO> jobs = projects.stream().map(project -> {
             Address address = project.getGenContractor().getAddress();
+            if (address == null) {
+                address = Address.builder().build();
+            }
             if (StringUtils.isEmpty(address.getName())) {
                 address.setName("Some Owner");
             }
