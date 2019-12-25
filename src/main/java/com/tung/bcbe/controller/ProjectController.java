@@ -26,7 +26,6 @@ import com.tung.bcbe.repository.SpecialtyRepository;
 import com.tung.bcbe.repository.TemplateRepository;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -51,7 +50,6 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -214,7 +212,7 @@ public class ProjectController {
     public Page<ProjectDTO> getJobs(@RequestParam(required = false) UUID[] specialty, Pageable pageable) {
         Page<Project> page;
         if (specialty != null && specialty.length > 0) {
-            List<Specialty> sp = specialtyRepository.findByIdIn(Arrays.asList(specialty));
+            List<Specialty> sp = specialtyRepository.findAllById(Arrays.asList(specialty));
             Page<ProjectSpecialty> ps = projectSpecialtyRepository.findBySpecialtyIn(sp, pageable);
             page = new PageImpl<>(ps.getContent().stream().map(ProjectSpecialty::getProject).collect(Collectors.toList()),
                     pageable, ps.getTotalElements());
