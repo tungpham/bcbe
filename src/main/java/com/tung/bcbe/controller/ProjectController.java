@@ -212,7 +212,7 @@ public class ProjectController {
     public Page<ProjectDTO> getJobs(@RequestParam(required = false) UUID[] specialty, Pageable pageable) {
         Page<Project> page;
         if (specialty != null && specialty.length > 0) {
-            List<Specialty> sp = specialtyRepository.findAllById(Arrays.asList(specialty));
+            List<Specialty> sp = specialtyRepository.findByIdIn(Arrays.asList(specialty));
             Page<ProjectSpecialty> ps = projectSpecialtyRepository.findBySpecialtyIn(sp, pageable);
             page = new PageImpl<>(ps.getContent().stream().map(ProjectSpecialty::getProject).collect(Collectors.toList()),
                     pageable, ps.getTotalElements());
