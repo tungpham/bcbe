@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -565,14 +566,21 @@ public class ContractorController {
     }
 
     @PostMapping("/reviews/{con_id}/write")
-    public void createReview(@PathVariable(name = "con_id") UUID conId, @RequestBody ReviewDTO dto) {
+    public ResponseEntity createReview(@PathVariable(name = "con_id") UUID conId, @ModelAttribute ReviewDTO reviewDTO,
+                             @RequestParam(value = "file", required = false) MultipartFile[] files) {
         Contractor contractor = contractorRepository.findById(conId).orElseThrow(Util.notFound(conId, Contractor.class));
-        Review review = Review.builder()
-                .review(dto.getReview())
-                .rating(dto.getRating())
-                .contractor(contractor)
-                .build();
-        reviewRepository.save(review);
+        int size = files == null ? 0 : files.length;
+        if (size > 0) {
+            return new ResponseEntity(HttpStatus.OK);
+        }
+        
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+//        Review review = Review.builder()
+//                .review(dto.getReview())
+//                .rating(dto.getRating())
+//                .contractor(contractor)
+//                .build();
+//        reviewRepository.save(review);
     }
 
     /**
