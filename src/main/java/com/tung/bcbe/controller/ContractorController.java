@@ -5,6 +5,7 @@ import com.tung.bcbe.dto.ContractorSearchFilter;
 import com.tung.bcbe.dto.ContractorSearchResultDto;
 import com.tung.bcbe.dto.FileNoteDto;
 import com.tung.bcbe.dto.GetContractorRatingResponse;
+import com.tung.bcbe.dto.ReviewDTO;
 import com.tung.bcbe.dto.ReviewSummary;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
@@ -150,14 +151,33 @@ public class ContractorController {
             Address existing = gen.getAddress();
             Address update = genContractor.getAddress();
             if (existing != null && update != null) {
-                existing.setName(update.getName());
-                existing.setStreet(update.getStreet());
-                existing.setCity(update.getCity());
-                existing.setPhone(update.getPhone());
-                existing.setCompany(update.getCompany());
-                existing.setWebsite(update.getWebsite());
-                existing.setEmployees(update.getEmployees());
-                existing.setFounded(update.getFounded());
+                if (update.getName() != null) {
+                    existing.setName(update.getName());
+                }
+                if (update.getStreet() != null) {
+                    existing.setStreet(update.getStreet());
+                }
+                if (update.getCity() != null) {
+                    existing.setCity(update.getCity());
+                }
+                if (update.getPhone() != null) {
+                    existing.setPhone(update.getPhone());
+                }
+                if (update.getCompany() != null) {
+                    existing.setCompany(update.getCompany());
+                }
+                if (update.getWebsite() != null) {
+                    existing.setWebsite(update.getWebsite());
+                }
+                if (update.getEmployees() != null) {
+                    existing.setEmployees(update.getEmployees());
+                }
+                if (update.getFounded() != null) {
+                    existing.setFounded(update.getFounded());
+                }
+                if (update.getIntroduction() != null) {
+                    existing.setIntroduction(update.getIntroduction());
+                }
             } else {
                 gen.setAddress(update);
             }
@@ -544,8 +564,14 @@ public class ContractorController {
 //        return reviewRepository.findAllById(conId, pageable);
     }
 
-    @PostMapping("/reviews")
-    public void createReview(@RequestBody Review review) {
+    @PostMapping("/reviews/{con_id}/write")
+    public void createReview(@PathVariable(name = "con_id") UUID conId, @RequestBody ReviewDTO dto) {
+        Contractor contractor = contractorRepository.findById(conId).orElseThrow(Util.notFound(conId, Contractor.class));
+        Review review = Review.builder()
+                .review(dto.getReview())
+                .rating(dto.getRating())
+                .contractor(contractor)
+                .build();
         reviewRepository.save(review);
     }
 
