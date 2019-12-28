@@ -523,7 +523,7 @@ public class ContractorController {
                     .client("customer 1")
                     .review("extremely helpful and very responsive. I called in the morning requesting an estimate and he arrived later that day. I would highly recommend")
                     .rating(4)
-                    .specialty("Flooring")
+                    .qualities("Flooring")
                     .build());
             list.add(Review.builder().contractor(contractor)
                     .reviewer(Contractor.builder()
@@ -532,7 +532,7 @@ public class ContractorController {
                     .client("customer 2")
                     .review("not only was the first to respond (several did not respond), he had a guy out here within an hour to repair")
                     .rating(4)
-                    .specialty("Flooring")
+                    .qualities("Flooring")
                     .build());
             list.add(Review.builder().contractor(contractor)
                     .reviewer(Contractor.builder()
@@ -557,7 +557,7 @@ public class ContractorController {
                     .client("customer 5")
                     .review("I would be happy to revise this review if we are able to find a solution to our issue, but this was a botched job from the beginning")
                     .rating(1)
-                    .specialty("Flooring")
+                    .qualities("Flooring")
                     .build());
             return list;
         }).orElseThrow(Util.notFound(conId, Contractor.class));
@@ -566,21 +566,17 @@ public class ContractorController {
     }
 
     @PostMapping("/reviews/{con_id}/write")
-    public ResponseEntity createReview(@PathVariable(name = "con_id") UUID conId, @ModelAttribute ReviewDTO reviewDTO,
+    public void createReview(@PathVariable(name = "con_id") UUID conId, @ModelAttribute ReviewDTO dto,
                              @RequestParam(value = "file", required = false) MultipartFile[] files) {
         Contractor contractor = contractorRepository.findById(conId).orElseThrow(Util.notFound(conId, Contractor.class));
         int size = files == null ? 0 : files.length;
-        if (size > 0) {
-            return new ResponseEntity(HttpStatus.OK);
-        }
-        
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
-//        Review review = Review.builder()
-//                .review(dto.getReview())
-//                .rating(dto.getRating())
-//                .contractor(contractor)
-//                .build();
-//        reviewRepository.save(review);
+        Review review = Review.builder()
+                .review(dto.getReview())
+                .rating(dto.getRating())
+                .qualities(String.join(", ", dto.getQualities()))
+                .contractor(contractor)
+                .build();
+        reviewRepository.save(review);
     }
 
     /**

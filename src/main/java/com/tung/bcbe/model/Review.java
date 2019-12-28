@@ -38,7 +38,7 @@ public class Review extends ID {
     private int rating;
 
     @Column
-    private String specialty;
+    private String qualities;
 
-    private String client;
+    private transient String client;
 }
