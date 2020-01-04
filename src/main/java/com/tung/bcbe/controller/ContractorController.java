@@ -104,6 +104,9 @@ public class ContractorController {
     @Value("${S3_BUCKET_CON}")
     private String bucket;
 
+    @Autowired
+    private Auth0Util auth0Util;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -129,6 +132,9 @@ public class ContractorController {
 
     @GetMapping("/{con_id}")
     public Optional<Contractor> getContractorById(@PathVariable(name = "con_id") UUID genId) {
+
+        auth0Util.validateContractorId(genId.toString());
+
         return contractorRepository.findById(genId).map(contractor -> {
             Set<ContractorFile> files = contractor.getContractorFiles().stream()
                     .filter(file -> !ContractorFile.Type.AVATAR.equals(file.getType()))

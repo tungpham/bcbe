@@ -3,6 +3,7 @@ package com.tung.bcbe.config;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.auth0.client.auth.AuthAPI;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import org.springframework.context.annotation.Bean;
@@ -27,5 +28,10 @@ public class Config {
         Hibernate5Module hibernate5Module = new Hibernate5Module();
         hibernate5Module.disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION);
         return hibernate5Module;
+    }
+
+    @Bean
+    public AuthAPI authAPI() {
+        return new AuthAPI("https://tungcb.auth0.com/", "", "");
     }
 }

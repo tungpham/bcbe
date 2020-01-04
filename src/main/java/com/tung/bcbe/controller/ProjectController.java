@@ -15,6 +15,7 @@ import com.tung.bcbe.model.Proposal;
 import com.tung.bcbe.model.Specialty;
 import com.tung.bcbe.model.Template;
 import com.tung.bcbe.repository.ContractorRepository;
+import com.tung.bcbe.repository.ContractorSpecialtyRepository;
 import com.tung.bcbe.repository.ProjectFileRepository;
 import com.tung.bcbe.repository.ProjectInviteRepository;
 import com.tung.bcbe.repository.ProjectRelationshipRepository;
@@ -51,6 +52,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,6 +83,9 @@ public class ProjectController {
     private SpecialtyRepository specialtyRepository;
 
     @Autowired
+    private ContractorSpecialtyRepository contractorSpecialtyRepository;
+
+    @Autowired
     private ProjectSpecialtyRepository projectSpecialtyRepository;
 
     @Autowired
@@ -97,6 +102,9 @@ public class ProjectController {
 
     @Value("${S3_BUCKET}")
     private String bucket;
+
+    @Autowired
+    private Auth0Util auth0Util;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -210,6 +218,13 @@ public class ProjectController {
     @ApiOperation(value = "get available jobs based on contractor specialties")
     @GetMapping("/projects/available")
     public Page<ProjectDTO> getJobs(@RequestParam(required = false) UUID[] specialty, Pageable pageable) {
+        String contractorId = auth0Util.getContractorId();
+        if (contractorId == null) {
+            return new PageImpl<>(Collections.emptyList());
+        }
+
+//        List<ContractorSpecialty> contractorSpecialties = contractorSpecialtyRepository.getContractorSpecialtiesByContractorId(UUID.fromString(contractorId));
+
         Page<Project> page;
         if (specialty != null && specialty.length > 0) {
             List<Specialty> sp = specialtyRepository.findByIdIn(Arrays.asList(specialty));
