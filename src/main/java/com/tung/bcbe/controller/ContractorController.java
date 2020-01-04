@@ -133,7 +133,7 @@ public class ContractorController {
     @GetMapping("/{con_id}")
     public Optional<Contractor> getContractorById(@PathVariable(name = "con_id") UUID genId) {
 
-        auth0Util.validateContractorId(genId.toString());
+//        auth0Util.validateContractorId(genId.toString());
 
         return contractorRepository.findById(genId).map(contractor -> {
             Set<ContractorFile> files = contractor.getContractorFiles().stream()
