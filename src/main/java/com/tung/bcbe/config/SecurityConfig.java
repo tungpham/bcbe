@@ -27,6 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/projects/available").authenticated()
                 .and()
                 .oauth2ResourceServer().jwt();
+        http.cors();
     }
 
     @Bean

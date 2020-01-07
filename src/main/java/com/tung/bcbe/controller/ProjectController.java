@@ -302,6 +302,12 @@ public class ProjectController {
             return dto;
         }).collect(Collectors.toList());
 
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         return new PageImpl<>(jobs, pageable, page.getTotalElements());
     }
 
