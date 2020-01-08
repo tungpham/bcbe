@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -126,13 +125,6 @@ public class ProposalController {
     public Page<Proposal> getProposalsBySubContractorId(@ApiParam(value = "contractor id") @PathVariable(value = "sub_id") UUID subId,
                                                         @RequestParam(value = "status", required = false) Proposal.STATUS status,
                                                         Pageable pageable) {
-
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         if (status == null)
             return proposalRepository.findBySubContractorId(subId, pageable);
         else

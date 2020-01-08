@@ -57,7 +57,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -213,14 +212,6 @@ public class ProjectController {
                     return dto;
                 })
                 .collect(Collectors.toList());
-
-        //fake delay
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            log.error("Interrupt while sleeping", e);
-        }
-
         return new PageImpl<>(newProjects, pageable, page.getTotalElements());
     }
 
@@ -301,12 +292,6 @@ public class ProjectController {
 
             return dto;
         }).collect(Collectors.toList());
-
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         return new PageImpl<>(jobs, pageable, page.getTotalElements());
     }
