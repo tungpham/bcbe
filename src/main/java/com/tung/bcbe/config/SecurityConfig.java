@@ -23,11 +23,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private String  issuer;
 
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .mvcMatchers("/projects/available").authenticated()
-                .antMatchers("/contractors").permitAll()
-                .and()
-                .oauth2ResourceServer().jwt();
+//        http.authorizeRequests()
+//                .mvcMatchers("/projects/available").authenticated()
+//                .antMatchers("/contractors").permitAll()
+//                .and()
+//                .oauth2ResourceServer().jwt();
         http.cors();
     }
 
