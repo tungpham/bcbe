@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
     @Value("${auth0.audience}")
     private String audience;
 
@@ -23,7 +22,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private String  issuer;
 
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/contractors").permitAll()
                 .mvcMatchers("/projects/available").authenticated()
                 .and()
                 .oauth2ResourceServer().jwt();
