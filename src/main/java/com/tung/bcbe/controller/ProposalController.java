@@ -131,6 +131,16 @@ public class ProposalController {
             return proposalRepository.findBySubContractorIdAndStatus(subId, status, pageable);
     }
 
+    @ApiOperation(value = "Get all proposals submitted by the contractor")
+    @GetMapping("/contractors/{sub_id}/proposals/search")
+    public Page<Proposal> getProposalsBySubContractorId(@ApiParam(value = "contractor id") @PathVariable(value = "sub_id") UUID subId,
+                                                        @RequestParam(value = "status") Proposal.STATUS status,
+                                                        @RequestParam(value = "term") String term,
+                                                        Pageable pageable) {
+        return proposalRepository.findBySubContractorIdAndStatusAndDescriptionContainsOrProjectTitleContainsOrProjectDescriptionContains(
+                subId, status, term, term, term, pageable);
+    }
+
     @GetMapping("/proposals/{proposal_id}")
     public Proposal getProposal(@PathVariable(value = "proposal_id") UUID proposalId) {
         return proposalRepository.findById(proposalId).orElseThrow(Util.notFound(proposalId, Proposal.class));

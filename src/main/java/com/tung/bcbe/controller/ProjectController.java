@@ -192,27 +192,45 @@ public class ProjectController {
         Page<Project> page = projectRepository.findByGenContractorIdAndStatus(genId, status, pageable);
         List<Project> projects = page.getContent();
         List<ProjectDTO> newProjects = projects.stream()
-                .map(project -> {
-                    project.setGenContractor(null); // clear out owner info
-                    ProjectDTO dto = ProjectDTO.builder().build();
-                    switch (status) {
-                        case ACTIVE:
-                            Page<Proposal> proposals = proposalRepository.findByProjectId(project.getId(), null);
-                            dto.setNumberOfBids(proposals.getTotalPages());
-                            break;
-                        case ONGOING:
-                            dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
-                            break;
-                        case ARCHIVED:
-                            dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
-                            break;
-                    }
-                    project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
-                    dto.setProject(project);
-                    return dto;
-                })
+                .map(this::convertToProjectDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(newProjects, pageable, page.getTotalElements());
+    }
+
+    @GetMapping("/contractors/{gen_id}/projects/search")
+    public Page<ProjectDTO> searchProject( @PathVariable(value = "gen_id") UUID genId,
+                                        @RequestParam(name = "status", defaultValue = "ACTIVE") Project.Status status,
+                                        @RequestParam(name = "term") String term,
+                                        Pageable pageable) {
+        Page<Project> page = projectRepository.findByGenContractorIdAndStatusAndDescriptionContainsOrTitleContains(genId, status, term, term, pageable);
+        List<Project> projects = page.getContent();
+        List<ProjectDTO> newProjects = projects.stream()
+                .map(this::convertToProjectDTO)
+                .collect(Collectors.toList());
+        return new PageImpl<>(newProjects, pageable, page.getTotalElements());
+    }
+
+    /*
+    Convert Project to ProjectDTO for frontend, call proposal repository to get number of bids on the project
+     */
+    public ProjectDTO convertToProjectDTO(Project project) {
+        project.setGenContractor(null); // clear out owner info
+        ProjectDTO dto = ProjectDTO.builder().build();
+        switch (project.getStatus()) {
+            case ACTIVE:
+                Page<Proposal> proposals = proposalRepository.findByProjectId(project.getId(), null);
+                dto.setNumberOfBids(proposals.getTotalPages());
+                break;
+            case ONGOING:
+                dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
+                break;
+            case ARCHIVED:
+                dto.setContractor(Contractor.builder().address(Address.builder().name("Some contractor").build()).build());
+                break;
+        }
+        project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
+        dto.setProject(project);
+        return dto;
     }
 
     @ApiOperation(value = "get available jobs based on contractor specialties")
