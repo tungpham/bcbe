@@ -1,14 +1,13 @@
 package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.tung.bcbe.dto.PastProject;
 import com.tung.bcbe.dto.ProjectDTO;
+import com.tung.bcbe.dto.ProjectWithSpecialtyDTO;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.ProjectFile;
 import com.tung.bcbe.model.ProjectInvite;
-import com.tung.bcbe.model.ProjectRelationship;
 import com.tung.bcbe.model.ProjectSpecialty;
 import com.tung.bcbe.model.ProjectTemplate;
 import com.tung.bcbe.model.Proposal;
@@ -112,29 +111,31 @@ public class ProjectController {
     /**
      * User create new project. The project will have status ACTIVE and type of OWNER_PROJECT
      * @param genId
-     * @param project
+     * @param projectWithSpecialtyDTO
      * @return
      */
     @ApiOperation(value = "Create a new project for an owner")
     @PostMapping("/contractors/{gen_id}/projects")
     public Project createProject(@PathVariable(value = "gen_id") UUID genId,
-                                 @Valid @RequestBody Project project) {
-        return createProject(genId, project, Project.Status.ACTIVE, Project.Type.OWNER_PROJECT);
+                                 @Valid @RequestBody ProjectWithSpecialtyDTO projectWithSpecialtyDTO) {
+        return createProject(genId, projectWithSpecialtyDTO.getProject(), Project.Status.ACTIVE, Project.Type.OWNER_PROJECT);
     }
 
     /**
      * Sub contractor can manually create past projects for their profile. These projects would have type of
      * SUBCON_PROJECT and status of ARCHIVED
      * @param genId
-     * @param pastProject
+     * @param projectWithSpecialtyDTO
      * @return
      */
     @ApiOperation(value = "Create a past project for a contractor. It's used when contractor add past project in their profile")
     @PostMapping("/contractors/{gen_id}/projects/past")
     public Project createPastProject(@PathVariable(value = "gen_id") UUID genId,
-                                     @Valid @RequestBody PastProject pastProject) {
-        Project proj = createProject(genId, pastProject.getProject(), Project.Status.ARCHIVED, Project.Type.SUBCON_PROJECT);
-        addSpecialtyToProject(proj.getId(), UUID.fromString(pastProject.getSpecialtyId()));
+                                     @Valid @RequestBody ProjectWithSpecialtyDTO projectWithSpecialtyDTO) {
+        Project proj = createProject(genId, projectWithSpecialtyDTO.getProject(), Project.Status.ARCHIVED, Project.Type.SUBCON_PROJECT);
+        for (String id : projectWithSpecialtyDTO.getSpecialtyIds()) {
+            addSpecialtyToProject(proj.getId(), UUID.fromString(id));
+        }
 
         proj.setGenContractor(null);
         return proj;
@@ -154,7 +155,6 @@ public class ProjectController {
     }
 
     public Project createProject(UUID genId, Project project, Project.Status status, Project.Type type) {
-        Contractor con = contractorRepository.findById(genId).get();
         return contractorRepository.findById(genId).map(genContractor -> {
             project.setGenContractor(genContractor);
             project.setStatus(status);
@@ -163,19 +163,19 @@ public class ProjectController {
         }).orElseThrow(Util.notFound(genId, Contractor.class));
     }
 
-    @PostMapping("/contractors/{gen_id}/projects/{proj_id}/child")
-    public Project createSubProject(@PathVariable(value = "gen_id") UUID genId,
-                                    @PathVariable(value = "proj_id") UUID projId,
-                                    @Valid @RequestBody Project project) {
-        Project subProject = createProject(genId, project);
-        projectRepository.findById(projId).map(parent -> {
-            ProjectRelationship relationship = new ProjectRelationship();
-            relationship.setParent(parent);
-            relationship.setChild(subProject);
-            return projectRelationshipRepository.save(relationship);
-        }).orElseThrow(Util.notFound(projId, Project.class));
-        return subProject;
-    }
+//    @PostMapping("/contractors/{gen_id}/projects/{proj_id}/child")
+//    public Project createSubProject(@PathVariable(value = "gen_id") UUID genId,
+//                                    @PathVariable(value = "proj_id") UUID projId,
+//                                    @Valid @RequestBody Project project) {
+//        Project subProject = createProject(genId, project);
+//        projectRepository.findById(projId).map(parent -> {
+//            ProjectRelationship relationship = new ProjectRelationship();
+//            relationship.setParent(parent);
+//            relationship.setChild(subProject);
+//            return projectRelationshipRepository.save(relationship);
+//        }).orElseThrow(Util.notFound(projId, Project.class));
+//        return subProject;
+//    }
 
     /**
      * Get list of current owner projects
@@ -202,12 +202,11 @@ public class ProjectController {
                                         @RequestParam(name = "status", defaultValue = "ACTIVE") Project.Status status,
                                         @RequestParam(name = "term") String term,
                                         Pageable pageable) {
-        Page<Project> page = projectRepository.findByGenContractorIdAndStatusAndDescriptionContainsOrTitleContains(genId, status, term, term, pageable);
-        List<Project> projects = page.getContent();
-        List<ProjectDTO> newProjects = projects.stream()
+        Page<Project> projects = projectRepository.searchProject(genId, status, term, term, pageable);
+        List<ProjectDTO> newProjects = projects.getContent().stream()
                 .map(this::convertToProjectDTO)
                 .collect(Collectors.toList());
-        return new PageImpl<>(newProjects, pageable, page.getTotalElements());
+        return new PageImpl<>(newProjects, pageable, projects.getTotalElements());
     }
 
     /*

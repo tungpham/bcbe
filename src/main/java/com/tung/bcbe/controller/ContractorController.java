@@ -110,6 +110,13 @@ public class ContractorController {
     @PersistenceContext
     private EntityManager entityManager;
 
+    private List<String> defaultFAQs = Arrays.asList(
+            "What should the customer know about your pricing (e.g., discounts, fees)?",
+            "What is your typical process for working with a new customer?",
+            "What education and/or training do you have that relates to your work?"
+    );
+
+
     @PostMapping
     public Contractor create(@Valid @RequestBody Contractor contractor) {
         contractor.setStatus(Contractor.STATUS.PENDING);
@@ -593,13 +600,26 @@ public class ContractorController {
      */
     @GetMapping("/{con_id}/faq")
     public List<ContractorFAQ> getFAQ(@PathVariable(name = "con_id") UUID conId, Pageable pageable) {
-        List<ContractorFAQ> list = new ArrayList<>();
-        list.add(ContractorFAQ.builder().question("Question 1").answer("Answer 1").build());
-        list.add(ContractorFAQ.builder().question("Question 2").answer("Answer 2").build());
-        list.add(ContractorFAQ.builder().question("Question 3").answer("Answer 3").build());
-        list.add(ContractorFAQ.builder().question("Question 4").answer("Answer 4").build());
-        return list;
-//        return contractorFAQRepository.findAllById(conId, pageable);
+        List<ContractorFAQ> faqs = contractorFAQRepository.findAllById(conId, pageable);
+        if (faqs.size() == 0) {
+            return defaultFAQs.stream()
+                    .map(question -> ContractorFAQ.builder().question(question).build())
+                    .collect(Collectors.toList());
+        } else {
+            return faqs;
+        }
+    }
+
+    @PostMapping("/{con_id}/faq")
+    public void saveFAQ(@PathVariable(name = "con_id") UUID conId, @RequestBody List<ContractorFAQ> faqs) {
+        contractorRepository.findById(conId).map(contractor -> {
+            List<ContractorFAQ> valids = faqs.stream()
+                    .filter(faq -> defaultFAQs.contains(faq.getQuestion()))
+                    .peek(faq -> faq.setContractor(contractor))
+                    .collect(Collectors.toList());
+            contractorFAQRepository.saveAll(valids);
+            return contractor;
+        }).orElseThrow(Util.notFound(conId, Contractor.class));
     }
 
     public String like(String s) {

@@ -137,8 +137,7 @@ public class ProposalController {
                                                         @RequestParam(value = "status") Proposal.STATUS status,
                                                         @RequestParam(value = "term") String term,
                                                         Pageable pageable) {
-        return proposalRepository.findBySubContractorIdAndStatusAndDescriptionContainsOrProjectTitleContainsOrProjectDescriptionContains(
-                subId, status, term, term, term, pageable);
+        return proposalRepository.searchProposal(subId, status, term, pageable);
     }
 
     @GetMapping("/proposals/{proposal_id}")

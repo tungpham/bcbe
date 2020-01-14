@@ -49,7 +49,6 @@ CREATE TABLE contractor
     status varchar(10),
     status_reason varchar(300),
     address_id uuid references address,
-    unique(email),
     created_at timestamp not null,
     updated_at timestamp not null,
     updated_by varchar(50),
@@ -213,7 +212,8 @@ CREATE TABLE contractor_faq (
     answer varchar(1000),
     created_at timestamp not null,
     updated_at timestamp not null,
-    updated_by varchar(50)
+    updated_by varchar(50),
+    unique(question)
 );
 
 create table proposal_option (

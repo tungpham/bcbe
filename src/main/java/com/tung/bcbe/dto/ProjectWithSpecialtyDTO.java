@@ -4,8 +4,8 @@ import com.tung.bcbe.model.Project;
 import lombok.Data;
 
 @Data
-public class PastProject {
+public class ProjectWithSpecialtyDTO {
 
     private Project project;
-    private String specialtyId;
+    private String[] specialtyIds;
 }
