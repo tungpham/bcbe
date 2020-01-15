@@ -66,6 +66,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -595,12 +596,11 @@ public class ContractorController {
     /**
      * TODO to be implemented
      * @param conId
-     * @param pageable
      * @return
      */
     @GetMapping("/{con_id}/faq")
-    public List<ContractorFAQ> getFAQ(@PathVariable(name = "con_id") UUID conId, Pageable pageable) {
-        List<ContractorFAQ> faqs = contractorFAQRepository.findAllById(conId, pageable);
+    public List<ContractorFAQ> getFAQ(@PathVariable(name = "con_id") UUID conId) {
+        List<ContractorFAQ> faqs = contractorFAQRepository.findAllByContractorId(conId);
         if (faqs.size() == 0) {
             return defaultFAQs.stream()
                     .map(question -> ContractorFAQ.builder().question(question).build())
@@ -612,14 +612,27 @@ public class ContractorController {
 
     @PostMapping("/{con_id}/faq")
     public void saveFAQ(@PathVariable(name = "con_id") UUID conId, @RequestBody List<ContractorFAQ> faqs) {
-        contractorRepository.findById(conId).map(contractor -> {
-            List<ContractorFAQ> valids = faqs.stream()
-                    .filter(faq -> defaultFAQs.contains(faq.getQuestion()))
-                    .peek(faq -> faq.setContractor(contractor))
-                    .collect(Collectors.toList());
-            contractorFAQRepository.saveAll(valids);
-            return contractor;
-        }).orElseThrow(Util.notFound(conId, Contractor.class));
+
+        Contractor contractor = contractorRepository.findById(conId).orElseThrow(Util.notFound(conId, Contractor.class));
+
+        Map<String, ContractorFAQ> existings = contractorFAQRepository.findAllByContractorId(conId).stream()
+                .collect(Collectors.toMap(ContractorFAQ::getQuestion, faq -> faq));
+
+        List<ContractorFAQ> valids = faqs.stream()
+                .filter(faq -> defaultFAQs.contains(faq.getQuestion()))
+                .map(faq -> {
+                    String question = faq.getQuestion();
+                    if (existings.containsKey(question)) {
+                        existings.get(question).setAnswer(faq.getAnswer());
+                        return existings.get(question);
+                    }
+
+                    faq.setContractor(contractor);
+                    return faq;
+                })
+                .collect(Collectors.toList());
+
+        contractorFAQRepository.saveAll(valids);
     }
 
     public String like(String s) {
