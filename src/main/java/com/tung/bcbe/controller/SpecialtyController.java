@@ -71,9 +71,13 @@ public class SpecialtyController {
 
     @GetMapping("/cities")
     public List<String> getCities() {
-        return Arrays.asList("ha noi", "sai gon", "hai phong", "ho chi minh", "da nang", "nha trang", "phu quoc", "vung tau", "hue", "hoi an");
+        return Arrays.asList("ha noi", "ho chi minh", "hai phong", "da nang", "nha trang", "phu quoc", "vung tau", "hue", "hoi an");
     }
 
+    /**
+     * Return the list of items to be displayed on the home page carousel
+     * @return
+     */
     @GetMapping("/carousel")
     public List<Specialty> getSpecialtyCarousel() {
         List<Specialty> list = new ArrayList<>();
