@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,9 @@ public class SpecialtyController {
 
     @Autowired
     private SpecialtyRepository specialtyRepository;
+
+    private List<String> carouselSpecialties = Arrays.asList("Ceiling", "Flooring", "Painting", "Interior Designers & Decorators", "Outdoor Lighting & Audio Visual Systems",
+            "Building Supplies", "Kitchen & Bathroom Remodelers", "Home Builders", "Appliances");
 
     @PostMapping
     public Specialty add(@RequestBody @Valid Specialty specialty) {
@@ -68,5 +72,16 @@ public class SpecialtyController {
     @GetMapping("/cities")
     public List<String> getCities() {
         return Arrays.asList("ha noi", "sai gon", "hai phong", "ho chi minh", "da nang", "nha trang", "phu quoc", "vung tau", "hue", "hoi an");
+    }
+
+    @GetMapping("/carousel")
+    public List<Specialty> getSpecialtyCarousel() {
+        List<Specialty> list = new ArrayList<>();
+        specialtyRepository.findAll().forEach(specialty -> {
+            if (carouselSpecialties.contains(specialty.getName())) {
+                list.add(specialty);
+            }
+        });
+        return list;
     }
 }
