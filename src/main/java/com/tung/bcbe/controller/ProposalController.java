@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -131,12 +132,15 @@ public class ProposalController {
             return proposalRepository.findBySubContractorIdAndStatus(subId, status, pageable);
     }
 
-    @ApiOperation(value = "Get all proposals submitted by the contractor")
+    @ApiOperation(value = "Search proposals submitted by the contractor")
     @GetMapping("/contractors/{sub_id}/proposals/search")
-    public Page<Proposal> getProposalsBySubContractorId(@ApiParam(value = "contractor id") @PathVariable(value = "sub_id") UUID subId,
+    public Page<Proposal> searchProposalsBySubContractorId(@ApiParam(value = "contractor id") @PathVariable(value = "sub_id") UUID subId,
                                                         @RequestParam(value = "status") Proposal.STATUS status,
                                                         @RequestParam(value = "term") String term,
                                                         Pageable pageable) {
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (Exception e) {}
         return proposalRepository.searchProposal(subId, status, term, pageable);
     }
 

@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -206,6 +207,11 @@ public class ProjectController {
         List<ProjectDTO> newProjects = projects.getContent().stream()
                 .map(this::convertToProjectDTO)
                 .collect(Collectors.toList());
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return new PageImpl<>(newProjects, pageable, projects.getTotalElements());
     }
 
