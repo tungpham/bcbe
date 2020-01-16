@@ -70,6 +70,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -336,10 +337,17 @@ public class ContractorController {
                         .findAny().map(ContractorFile::getName).orElse(null)
         ).orElseThrow(Util.notFound(conId, Contractor.class));
 
-        if (filename != null)
+        if (filename != null) {
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return Util.download(s3, bucket, conId + "/" + filename);
-        else
+        }
+        else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     private void upload(UUID conId, String fileName, long size, InputStream inputStream,
