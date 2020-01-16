@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -138,9 +137,6 @@ public class ProposalController {
                                                         @RequestParam(value = "status") Proposal.STATUS status,
                                                         @RequestParam(value = "term") String term,
                                                         Pageable pageable) {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (Exception e) {}
         return proposalRepository.searchProposal(subId, status, term, pageable);
     }
 
