@@ -261,7 +261,7 @@ public class ProjectController {
             if (StringUtils.isEmpty(address.getName())) {
                 address.setName("Some Owner");
             }
-            project.setGenContractor(Contractor.builder().address(address).build()); //clear out owner info except for address
+//            project.setGenContractor(Contractor.builder().address(address).build()); //clear out owner info except for address
             project.setSubmittedDate(Util.dateFormat.format(project.getCreatedAt()));
 
             //TODO remove this fake data
