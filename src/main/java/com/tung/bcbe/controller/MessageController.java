@@ -1,6 +1,10 @@
 package com.tung.bcbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.tung.bcbe.dto.ConversationDTO;
+import com.tung.bcbe.dto.MessageDTO;
+import com.tung.bcbe.model.Address;
+import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Message;
 import com.tung.bcbe.model.Proposal;
 import com.tung.bcbe.model.ProposalMessageFile;
@@ -12,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,6 +32,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
@@ -140,5 +149,51 @@ public class MessageController {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @GetMapping("/project/{project_id}/conversationsummary")
+    public PageImpl<ConversationDTO> getOwnerProjectMessagesList(@PathVariable(value = "project_id") UUID projectId,
+                                                                 Pageable pageable) {
+        List<ConversationDTO> list = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Contractor contractor = Contractor.builder()
+                    .address(Address.builder().name("Contractor Name " + i).build())
+                    .build();
+            contractor.setId(UUID.fromString(i%2 == 0 ? "a2d67837-2d36-41a5-8066-6118a2cb2128" : "b579a3de-8e01-4668-b80c-7c1a40068f69"));
+            MessageDTO msg = MessageDTO.builder().sender(contractor)
+                    .id(UUID.randomUUID())
+                    .timestamp(Instant.now().minus(5*i, ChronoUnit.MINUTES))
+                    .status(i%2 == 0 ? MessageDTO.Status.UNREAD : MessageDTO.Status.READ)
+                    .message("message message message message message message message message " + i).build();
+            ConversationDTO conversationDTO = ConversationDTO.builder().id(UUID.randomUUID())
+                    .latestMessage(msg)
+                    .build();
+            list.add(conversationDTO);
+        }
+        return new PageImpl<>(list, pageable, 20);
+    }
+
+    @GetMapping("/conversation/{conversation_id}")
+    public PageImpl<MessageDTO> getConversation(@PathVariable(value = "conversation_id") UUID conversation_id,
+                                                Pageable pageable) {
+        List<MessageDTO> list = new ArrayList<>();
+        Contractor p1 = Contractor.builder()
+                .address(Address.builder().name("Contractor p1 Name").build())
+                .build();
+        p1.setId(UUID.fromString("b579a3de-8e01-4668-b80c-7c1a40068f69"));
+        Contractor p2 = Contractor.builder()
+                .address(Address.builder().name("Contractor p2 Name").build())
+                .build();
+        p2.setId(UUID.fromString("a2d67837-2d36-41a5-8066-6118a2cb2128"));
+        Instant time = Instant.parse("2018-06-25T05:12:35Z");
+        for (int i = 0; i < 20; i++) {
+            MessageDTO msg = MessageDTO.builder().sender(i%2 == 0 ? p1 : p2)
+                    .id(UUID.randomUUID())
+                    .timestamp(time.plus(5*i, ChronoUnit.MINUTES))
+                    .message("message message message message message message message message message " + i).build();
+            list.add(msg);
+        }
+
+        return new PageImpl<>(list, pageable, 20);
     }
 }
