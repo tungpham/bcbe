@@ -6,6 +6,7 @@ import com.tung.bcbe.dto.MessageDTO;
 import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
 import com.tung.bcbe.model.Message;
+import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.Proposal;
 import com.tung.bcbe.model.ProposalMessageFile;
 import com.tung.bcbe.repository.ContractorRepository;
@@ -167,6 +168,7 @@ public class MessageController {
                     .message("message message message message message message message message " + i).build();
             ConversationDTO conversationDTO = ConversationDTO.builder().id(UUID.randomUUID())
                     .latestMessage(msg)
+                    .project(Project.builder().title("Project title " + i).build())
                     .build();
             list.add(conversationDTO);
         }

@@ -1,5 +1,6 @@
 package com.tung.bcbe.dto;
 
+import com.tung.bcbe.model.Project;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import java.util.UUID;
 public class ConversationDTO {
 
     private UUID id;
-    List<MessageDTO> messages;
-    MessageDTO latestMessage;
+    private List<MessageDTO> messages;
+    private MessageDTO latestMessage;
+    private Project project;
 }
