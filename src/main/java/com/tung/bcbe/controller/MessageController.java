@@ -155,8 +155,9 @@ public class MessageController {
     @GetMapping("/project/{project_id}/conversationsummary")
     public PageImpl<ConversationDTO> getOwnerProjectMessagesList(@PathVariable(value = "project_id") UUID projectId,
                                                                  Pageable pageable) {
+        int total = 40;
         List<ConversationDTO> list = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < total; i++) {
             Contractor contractor = Contractor.builder()
                     .address(Address.builder().name("Contractor Name " + i).build())
                     .build();
@@ -172,7 +173,7 @@ public class MessageController {
                     .build();
             list.add(conversationDTO);
         }
-        return new PageImpl<>(list, pageable, 20);
+        return new PageImpl<>(list, pageable, total);
     }
 
     @GetMapping("/conversation/{conversation_id}")
@@ -184,11 +185,12 @@ public class MessageController {
                 .build();
         p1.setId(UUID.fromString("b579a3de-8e01-4668-b80c-7c1a40068f69"));
         Contractor p2 = Contractor.builder()
-                .address(Address.builder().name("Contractor p2 Name").build())
+                .address(Address.builder().name("John Doe").build())
                 .build();
         p2.setId(UUID.fromString("a2d67837-2d36-41a5-8066-6118a2cb2128"));
         Instant time = Instant.parse("2018-06-25T05:12:35Z");
-        for (int i = 0; i < 20; i++) {
+        int total = 40;
+        for (int i = 0; i < total; i++) {
             MessageDTO msg = MessageDTO.builder().sender(i%2 == 0 ? p1 : p2)
                     .id(UUID.randomUUID())
                     .timestamp(time.plus(5*i, ChronoUnit.MINUTES))
@@ -196,6 +198,6 @@ public class MessageController {
             list.add(msg);
         }
 
-        return new PageImpl<>(list, pageable, 20);
+        return new PageImpl<>(list, pageable, total);
     }
 }
