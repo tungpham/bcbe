@@ -3,14 +3,21 @@ package com.tung.bcbe.controller;
 import com.amazonaws.services.s3.AmazonS3;
 import com.tung.bcbe.dto.ConversationDTO;
 import com.tung.bcbe.dto.MessageDTO;
-import com.tung.bcbe.model.Address;
 import com.tung.bcbe.model.Contractor;
+import com.tung.bcbe.model.Conversation;
+import com.tung.bcbe.model.ConversationMessage;
 import com.tung.bcbe.model.Message;
+import com.tung.bcbe.model.Message2;
+import com.tung.bcbe.model.MessageStatus;
 import com.tung.bcbe.model.Project;
 import com.tung.bcbe.model.Proposal;
 import com.tung.bcbe.model.ProposalMessageFile;
 import com.tung.bcbe.repository.ContractorRepository;
+import com.tung.bcbe.repository.ConversationMessageRepository;
+import com.tung.bcbe.repository.ConversationRepository;
+import com.tung.bcbe.repository.Message2Repository;
 import com.tung.bcbe.repository.MessageRepository;
+import com.tung.bcbe.repository.ProjectRepository;
 import com.tung.bcbe.repository.ProposalMessageFileRepository;
 import com.tung.bcbe.repository.ProposalRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +40,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -53,9 +58,21 @@ public class MessageController {
     
     @Autowired
     private ProposalRepository proposalRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
     
     @Autowired
     private ProposalMessageFileRepository proposalMessageFileRepository;
+
+    @Autowired
+    private ConversationRepository conversationRepository;
+
+    @Autowired
+    private Message2Repository message2Repository;
+
+    @Autowired
+    private ConversationMessageRepository conversationMessageRepository;
 
     @Autowired
     AmazonS3 s3;
@@ -152,52 +169,94 @@ public class MessageController {
         });
     }
 
-    @GetMapping("/project/{project_id}/conversationsummary")
-    public PageImpl<ConversationDTO> getOwnerProjectMessagesList(@PathVariable(value = "project_id") UUID projectId,
-                                                                 Pageable pageable) {
-        int total = 40;
-        List<ConversationDTO> list = new ArrayList<>();
-        for (int i = 0; i < total; i++) {
-            Contractor contractor = Contractor.builder()
-                    .address(Address.builder().name("Contractor Name " + i).build())
-                    .build();
-            contractor.setId(UUID.fromString(i%2 == 0 ? "a2d67837-2d36-41a5-8066-6118a2cb2128" : "b579a3de-8e01-4668-b80c-7c1a40068f69"));
-            MessageDTO msg = MessageDTO.builder().sender(contractor)
-                    .id(UUID.randomUUID())
-                    .timestamp(Instant.now().minus(5*i, ChronoUnit.MINUTES))
-                    .status(i%2 == 0 ? MessageDTO.Status.UNREAD : MessageDTO.Status.READ)
-                    .message("message message message message message message message message " + i).build();
-            ConversationDTO conversationDTO = ConversationDTO.builder().id(UUID.randomUUID())
-                    .latestMessage(msg)
-                    .project(Project.builder().title("Project title " + i).build())
-                    .build();
-            list.add(conversationDTO);
+    /**
+     * Send a message to a project. If there's no existing conversation, then create one. Else, use existing conversation
+     * @param projectId
+     */
+    @PostMapping("/project/{project_id}/contractor/{con_id}")
+    public void createMessage(@PathVariable(value = "project_id") UUID projectId,
+                              @PathVariable(value = "con_id") UUID conId,
+                              @RequestBody Message2 message2) {
+        Conversation existing = conversationRepository.findByProjectIdAndContractorId(projectId, conId);
+        Contractor contractor = contractorRepository.findById(conId).orElseThrow(Util.notFound(conId, Contractor.class));
+        if (existing == null) {
+            Project project = projectRepository.findById(projectId).orElseThrow(Util.notFound(projectId, Project.class));
+            Conversation conversation = Conversation.builder().contractor(contractor).project(project).build();
+            existing = conversationRepository.save(conversation);
         }
-        return new PageImpl<>(list, pageable, total);
+
+        message2.setSender(contractor);
+        message2.setStatus(MessageStatus.UNREAD);
+        Message2 msg = message2Repository.save(message2);
+
+        ConversationMessage conversationMessage = ConversationMessage.builder().conversation(existing).message2(msg).build();
+        conversationMessageRepository.save(conversationMessage);
     }
 
-    @GetMapping("/conversation/{conversation_id}")
-    public PageImpl<MessageDTO> getConversation(@PathVariable(value = "conversation_id") UUID conversation_id,
-                                                Pageable pageable) {
-        List<MessageDTO> list = new ArrayList<>();
-        Contractor p1 = Contractor.builder()
-                .address(Address.builder().name("Contractor p1 Name").build())
-                .build();
-        p1.setId(UUID.fromString("b579a3de-8e01-4668-b80c-7c1a40068f69"));
-        Contractor p2 = Contractor.builder()
-                .address(Address.builder().name("John Doe").build())
-                .build();
-        p2.setId(UUID.fromString("a2d67837-2d36-41a5-8066-6118a2cb2128"));
-        Instant time = Instant.parse("2018-06-25T05:12:35Z");
-        int total = 40;
-        for (int i = 0; i < total; i++) {
-            MessageDTO msg = MessageDTO.builder().sender(i%2 == 0 ? p1 : p2)
-                    .id(UUID.randomUUID())
-                    .timestamp(time.plus(5*i, ChronoUnit.MINUTES))
-                    .message("message message message message message message message message message " + i).build();
-            list.add(msg);
+    @PostMapping("/conversations/{convo_id}/contractor/{con_id}")
+    public void createMessageForConversation(@PathVariable(value = "convo_id") UUID convoId,
+                              @PathVariable(value = "con_id") UUID conId,
+                              @RequestBody Message2 message2) {
+        Conversation conversation = conversationRepository.findById(convoId).orElseThrow(Util.notFound(convoId, Conversation.class));
+        Contractor contractor = contractorRepository.findById(conId).orElseThrow(Util.notFound(conId, Contractor.class));
+        message2.setStatus(MessageStatus.UNREAD);
+        message2.setSender(contractor);
+        Message2 msg = message2Repository.save(message2);
+
+        ConversationMessage conversationMessage = ConversationMessage.builder().message2(msg).conversation(conversation).build();
+        conversationMessageRepository.save(conversationMessage);
+    }
+
+    /**
+     * Get list of conversations for a given project
+     * @param projectId
+     * @param pageable
+     * @return
+     */
+    @GetMapping("/project/{project_id}/conversations")
+    public Page<ConversationDTO> getProjectConversations(@PathVariable(value = "project_id") UUID projectId, Pageable pageable) {
+
+        Page<Conversation> page = conversationRepository.findByProjectId(projectId, pageable);
+
+        List<ConversationDTO> list = page.getContent().stream().map(conversation -> {
+            ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2UpdatedAt(conversation.getId());
+            return ConversationDTO.builder()
+                    .latestMessage(toMessageDTO(latestConversationMessage == null ? null : latestConversationMessage.getMessage2()))
+                    .id(conversation.getId())
+                    .projectTitle(conversation.getProject().getTitle())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    /**
+     * Get list of messages from a given conversation
+     * @param convoId
+     * @param pageable
+     * @return
+     */
+    @GetMapping("/conversations/{convo_id}")
+    public Page<MessageDTO> getConversationMessages(@PathVariable(value = "convo_id") UUID convoId, Pageable pageable) {
+
+        Page<ConversationMessage> page = conversationMessageRepository.findAllByConversationId(convoId, pageable);
+
+        List<MessageDTO> dtos = page.getContent().stream()
+                .map(convoMsg -> toMessageDTO(convoMsg.getMessage2()))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, page.getTotalElements());
+    }
+
+    public MessageDTO toMessageDTO(Message2 message2) {
+        if (message2 == null) {
+            return null;
         }
 
-        return new PageImpl<>(list, pageable, total);
+        return MessageDTO.builder()
+                .conId(message2.getSender().getId())
+                .timestamp(message2.getUpdatedAt())
+                .status(message2.getStatus())
+                .message(message2.getContent()).build();
     }
 }

@@ -1,24 +1,18 @@
 package com.tung.bcbe.dto;
 
-import com.tung.bcbe.model.Contractor;
+import com.tung.bcbe.model.MessageStatus;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.UUID;
 
 @Builder
 @Data
 public class MessageDTO {
 
-    public enum Status {
-        READ,
-        UNREAD
-    }
-
-    private UUID id;
-    private Contractor sender;
+    private UUID conId;
     private String message;
-    private Instant timestamp;
-    private Status status;
+    private Date timestamp;
+    private MessageStatus status;
 }

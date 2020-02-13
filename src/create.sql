@@ -254,6 +254,34 @@ create table message (
     updated_by varchar(50)
 );
 
+create table message2 (
+    id uuid primary key,
+    con_id uuid references contractor,
+    content varchar(500),
+    status varchar(10),
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+create table conversation (
+    id uuid primary key,
+    proj_id uuid references project,
+    con_id uuid references contractor,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
+create table conversation_message (
+    id uuid primary key,
+    convo_id uuid references conversation,
+    msg_id uuid references message2,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    updated_by varchar(50)
+);
+
 CREATE TABLE proposalmsgfile (
     id uuid primary key,
     name varchar(100),
