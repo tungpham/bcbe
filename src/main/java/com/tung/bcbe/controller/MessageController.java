@@ -220,11 +220,20 @@ public class MessageController {
 
         List<ConversationDTO> list = page.getContent().stream().map(conversation -> {
             ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2UpdatedAt(conversation.getId());
-            return ConversationDTO.builder()
-                    .latestMessage(toMessageDTO(latestConversationMessage == null ? null : latestConversationMessage.getMessage2()))
-                    .id(conversation.getId())
-                    .projectTitle(conversation.getProject().getTitle())
-                    .build();
+            return toConversationDTO(conversation, latestConversationMessage == null ? null : latestConversationMessage.getMessage2());
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    @GetMapping("/conversations/contractor/{con_id}")
+    public Page<ConversationDTO> getConversationsByContractor(@PathVariable(value = "con_id") UUID conId, Pageable pageable) {
+
+        Page<Conversation> page = conversationRepository.findByContractorId(conId, pageable);
+
+        List<ConversationDTO> list = page.getContent().stream().map(conversation -> {
+            ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2UpdatedAt(conversation.getId());
+            return toConversationDTO(conversation, latestConversationMessage == null ? null : latestConversationMessage.getMessage2());
         }).collect(Collectors.toList());
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -258,5 +267,17 @@ public class MessageController {
                 .timestamp(message2.getUpdatedAt())
                 .status(message2.getStatus())
                 .message(message2.getContent()).build();
+    }
+
+    public ConversationDTO toConversationDTO(Conversation conversation, Message2 latestMsg) {
+        if (conversation == null) {
+            return null;
+        }
+
+        return ConversationDTO.builder()
+                .projectTitle(conversation.getProject().getTitle())
+                .latestMessage(toMessageDTO(latestMsg))
+                .id(conversation.getId())
+                .build();
     }
 }
