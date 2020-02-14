@@ -259,7 +259,7 @@ public class MessageController {
 
         List<MessageDTO> dtos = page.getContent().stream()
                 .map(convoMsg -> toMessageDTO(convoMsg.getMessage2()))
-                .sorted(Comparator.comparing(MessageDTO::getTimestamp).reversed())
+                .sorted(Comparator.comparing(MessageDTO::getTimestamp))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
