@@ -11,7 +11,8 @@ import java.util.UUID;
 @Data
 public class MessageDTO {
 
-    private UUID conId;
+    private UUID senderId;
+    private String senderName;
     private String message;
     private Date timestamp;
     private MessageStatus status;

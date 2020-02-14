@@ -226,6 +226,12 @@ public class MessageController {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
+    /**
+     * Get list of conversations for a given contractor
+     * @param conId
+     * @param pageable
+     * @return
+     */
     @GetMapping("/conversations/contractor/{con_id}")
     public Page<ConversationDTO> getConversationsByContractor(@PathVariable(value = "con_id") UUID conId, Pageable pageable) {
 
@@ -263,7 +269,8 @@ public class MessageController {
         }
 
         return MessageDTO.builder()
-                .conId(message2.getSender().getId())
+                .senderId(message2.getSender().getId())
+                .senderName(message2.getSender().getAddress() == null ? null : message2.getSender().getAddress().getName())
                 .timestamp(message2.getUpdatedAt())
                 .status(message2.getStatus())
                 .message(message2.getContent()).build();
@@ -276,6 +283,7 @@ public class MessageController {
 
         return ConversationDTO.builder()
                 .projectTitle(conversation.getProject().getTitle())
+                .projectOwnerId(conversation.getProject().getGenContractor().getId())
                 .latestMessage(toMessageDTO(latestMsg))
                 .id(conversation.getId())
                 .build();
