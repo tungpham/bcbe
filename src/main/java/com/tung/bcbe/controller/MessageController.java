@@ -289,6 +289,7 @@ public class MessageController {
                 .projectOwnerName(getContractorName(conversation.getProject().getGenContractor()))
                 .latestMessage(toMessageDTO(latestMsg))
                 .id(conversation.getId())
+                .contractorId(conversation.getContractor().getId())
                 .build();
     }
 

@@ -13,4 +13,5 @@ public class ConversationDTO {
     private String projectTitle;
     private UUID projectOwnerId;
     private String projectOwnerName;
+    private UUID contractorId;
 }
