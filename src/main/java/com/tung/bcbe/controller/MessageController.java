@@ -40,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -258,6 +259,7 @@ public class MessageController {
 
         List<MessageDTO> dtos = page.getContent().stream()
                 .map(convoMsg -> toMessageDTO(convoMsg.getMessage2()))
+                .sorted(Comparator.comparing(MessageDTO::getTimestamp).reversed())
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
