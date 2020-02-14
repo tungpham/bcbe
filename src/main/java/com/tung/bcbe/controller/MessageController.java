@@ -219,7 +219,7 @@ public class MessageController {
         Page<Conversation> page = conversationRepository.findByProjectId(projectId, pageable);
 
         List<ConversationDTO> list = page.getContent().stream().map(conversation -> {
-            ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2UpdatedAt(conversation.getId());
+            ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2CreatedAtDesc(conversation.getId());
             return toConversationDTO(conversation, latestConversationMessage == null ? null : latestConversationMessage.getMessage2());
         }).collect(Collectors.toList());
 
@@ -238,7 +238,7 @@ public class MessageController {
         Page<Conversation> page = conversationRepository.findByContractorId(conId, pageable);
 
         List<ConversationDTO> list = page.getContent().stream().map(conversation -> {
-            ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2UpdatedAt(conversation.getId());
+            ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2CreatedAtDesc(conversation.getId());
             return toConversationDTO(conversation, latestConversationMessage == null ? null : latestConversationMessage.getMessage2());
         }).collect(Collectors.toList());
 

@@ -11,5 +11,5 @@ public interface ConversationMessageRepository extends PagingAndSortingRepositor
 
     Page<ConversationMessage> findAllByConversationId(UUID convoId, Pageable pageable);
 
-    ConversationMessage findTopByConversationIdOrderByMessage2UpdatedAt(UUID convoId);
+    ConversationMessage findTopByConversationIdOrderByMessage2CreatedAtDesc(UUID convoId);
 }
