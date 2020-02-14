@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ConversationMessageRepository extends PagingAndSortingRepository<ConversationMessage, UUID> {
 
-    Page<ConversationMessage> findAllByConversationId(UUID convoId, Pageable pageable);
+    Page<ConversationMessage> findAllByConversationIdOrderByCreatedAtDesc(UUID convoId, Pageable pageable);
 
     ConversationMessage findTopByConversationIdOrderByMessage2CreatedAtDesc(UUID convoId);
 }

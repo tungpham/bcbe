@@ -254,7 +254,7 @@ public class MessageController {
     @GetMapping("/conversations/{convo_id}")
     public Page<MessageDTO> getConversationMessages(@PathVariable(value = "convo_id") UUID convoId, Pageable pageable) {
 
-        Page<ConversationMessage> page = conversationMessageRepository.findAllByConversationId(convoId, pageable);
+        Page<ConversationMessage> page = conversationMessageRepository.findAllByConversationIdOrderByCreatedAtDesc(convoId, pageable);
 
         List<MessageDTO> dtos = page.getContent().stream()
                 .map(convoMsg -> toMessageDTO(convoMsg.getMessage2()))
