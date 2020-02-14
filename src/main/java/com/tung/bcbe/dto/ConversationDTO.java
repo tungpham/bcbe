@@ -12,4 +12,5 @@ public class ConversationDTO {
     private MessageDTO latestMessage;
     private String projectTitle;
     private UUID projectOwnerId;
+    private String projectOwnerName;
 }
