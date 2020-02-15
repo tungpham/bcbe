@@ -241,7 +241,8 @@ public class MessageController {
         List<ConversationDTO> list = page.getContent().stream().map(conversation -> {
             ConversationMessage latestConversationMessage = conversationMessageRepository.findTopByConversationIdOrderByMessage2CreatedAtDesc(conversation.getId());
             return toConversationDTO(conversation, latestConversationMessage == null ? null : latestConversationMessage.getMessage2());
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(c -> c.getLatestMessage().getTimestamp()))
+                .collect(Collectors.toList());
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
