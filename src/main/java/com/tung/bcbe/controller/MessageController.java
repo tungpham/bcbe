@@ -271,6 +271,7 @@ public class MessageController {
         }
 
         return MessageDTO.builder()
+                .id(message2.getId())
                 .senderId(message2.getSender().getId())
                 .senderName(getContractorName(message2.getSender()))
                 .timestamp(message2.getUpdatedAt())
